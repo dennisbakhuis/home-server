@@ -1,0 +1,20 @@
+keuken_schakelaars:
+  module: multi_switch_kitchen
+  class: Multi_Switch_Kitchen
+
+woonkamer_schakelaars:
+  module: multi_switch_living_room
+  class: Multi_Switch_Living_Room
+
+boekenkast_slave_light:
+  module: bookshelf_slave_light
+  class: Bookshelf_Slave_Light
+
+dim_lights_tv_on:
+  module: dim_lights_on_entity
+  class: Dim_Lights_On_Entity
+  entity: media_player.lg_television
+  lights:
+    - light.woonkamer
+  dim_levels:
+    - 64

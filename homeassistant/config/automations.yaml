@@ -1,0 +1,36 @@
+- id: automatisch_licht_hal
+  alias: Automatisch licht hal
+  description: Licht gaat automatisch aan bij beweging
+  trigger:
+  - entity_id: binary_sensor.pir_a_gang
+    platform: state
+    to: 'on'
+  condition:
+  - condition: or
+    conditions:
+    - before: sunrise
+      before_offset: 01:00:00
+      condition: sun
+    - after: sunset
+      after_offset: -01:00:00
+      condition: sun
+  action:
+  - entity_id: light.hal
+    service: light.turn_on
+  initial_state: true
+- id: hal_licht_uit
+  alias: Automatisch licht hal uit
+  trigger:
+  - entity_id: binary_sensor.pir_a_gang
+    for: 0:00:60
+    from: 'on'
+    platform: state
+    to: 'off'
+  condition:
+  - condition: state
+    entity_id: automation.automatisch_licht_hal
+    state: 'on'
+  action:
+  - entity_id: light.hal
+    service: light.turn_off
+  initial_state: true

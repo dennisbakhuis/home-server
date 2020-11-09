@@ -1,0 +1,54 @@
+# Secrets
+secrets.yaml
+secrets/
+
+# Docker-compose .env file
+.env
+
+# No logs
+*.log
+*.txt
+
+# No databases
+*.db*
+*.sqlite*
+
+# python
+__pycache__
+
+# Appdaemon
+appdaemon/conf/compiled
+appdaemon/conf/dashboards
+
+# Authelia
+authelia/configuration.yml
+authelia/notification.txt
+authelia/users_database.yml
+
+# deconz all is generated at start of the container. Settings are saved on stick
+deconz/
+
+# home-assistant
+.storage/
+homeassistant/config/www/
+homeassistant/config/custom_components/
+homeassistant/config/tts/
+*.xml
+homeassistant/config/webostv.conf
+homeassistant/config/ip_bans.yaml
+homeassistant/config/trusted_proxies.yaml
+
+# node-red (Will be removed soon)
+node-red/
+
+# pihole
+pihole/
+
+#traefik
+shared/.htpasswd
+traefik2/acme/acme.json
+traefik2/rules/middleware.yml
+traefik2/rules/static-routes.yml
+
+# vscode
+vscode/

@@ -1,0 +1,93 @@
+- id: '1583772870800'
+  name: Eettafel - dimstand 1
+  entities:
+    light.eettafel_serrekant:
+      brightness: 104
+      color_temp: 468
+      effect_list:
+      - colorloop
+      friendly_name: Eettafel - Serrekant
+      is_deconz_group: false
+      max_mireds: 500
+      min_mireds: 153
+      state: 'on'
+      supported_features: 63
+    light.eettafel_woonkamerkant:
+      brightness: 104
+      color_temp: 468
+      effect_list:
+      - colorloop
+      friendly_name: Eettafel - woonkamerkant
+      is_deconz_group: false
+      max_mireds: 500
+      min_mireds: 153
+      state: 'on'
+      supported_features: 63
+- id: '1583773004000'
+  name: Eettafel - dimstand 2
+  entities:
+    light.eettafel_serrekant:
+      brightness: 104
+      color_temp: 342
+      effect_list:
+      - colorloop
+      friendly_name: Eettafel - Serrekant
+      is_deconz_group: false
+      max_mireds: 500
+      min_mireds: 153
+      state: 'on'
+      supported_features: 63
+    light.eettafel_woonkamerkant:
+      brightness: 104
+      color_temp: 342
+      effect_list:
+      - colorloop
+      friendly_name: Eettafel - woonkamerkant
+      is_deconz_group: false
+      max_mireds: 500
+      min_mireds: 153
+      state: 'on'
+      supported_features: 63
+- id: '1583773050200'
+  name: Eettafel - dimstand 3
+  entities:
+    light.eettafel_serrekant:
+      brightness: 104
+      effect_list:
+      - colorloop
+      friendly_name: Eettafel - Serrekant
+      hs_color:
+      - 26.814
+      - 88.627
+      is_deconz_group: false
+      max_mireds: 500
+      min_mireds: 153
+      rgb_color:
+      - 255
+      - 130
+      - 29
+      state: 'on'
+      supported_features: 63
+      xy_color:
+      - 0.603
+      - 0.373
+    light.eettafel_woonkamerkant:
+      brightness: 104
+      effect_list:
+      - colorloop
+      friendly_name: Eettafel - woonkamerkant
+      hs_color:
+      - 299.159
+      - 83.922
+      is_deconz_group: false
+      max_mireds: 500
+      min_mireds: 153
+      rgb_color:
+      - 252
+      - 40
+      - 255
+      state: 'on'
+      supported_features: 63
+      xy_color:
+      - 0.38
+      - 0.158

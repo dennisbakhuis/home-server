@@ -1,0 +1,62 @@
+# Authelia main configuration
+host: 0.0.0.0
+port: 9091
+log_level: warn
+default_redirection_url: <default-redirection-url>
+
+totp:
+  issuer: authelia.com
+  period: 30
+  skew: 1
+
+duo_api:
+  hostname: <duo api hostname>
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+    password:
+      algorithm: argon2id
+      iterations: 1
+      salt_length: 16
+      parallelism: 8
+      memory: 1024
+
+access_control:
+  default_policy: deny
+  rules:
+    - domain: <same as default redirection url>
+      policy: bypass
+    - domain:
+        - "*.<your-domain>"
+        - "<your-domain>"
+      policy: bypass
+      networks:
+        - <your local ip range>/24
+        - <your wan address>
+    - domain:
+        - "*.<your-domain>"
+        - "<your-domain>"
+      policy: two_factor
+
+session:
+  name: authelia_session
+  expiration: 3600  # 1 hour
+  inactivity: 300   # 5 minutes
+  domain: <your-domain>
+
+regulation: # max three tries within 5 minutes otherwise ban for one day
+  max_retries: 3
+  find_time: 300
+  ban_time: 86400
+
+storage:
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  filesystem:
+    filename: /config/notification.txt
+
+
+

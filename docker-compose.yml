@@ -1,0 +1,427 @@
+version: "3.7"
+
+
+##############
+## networks ##
+##############
+networks:
+  t2_proxy:
+    external:
+      name: t2_proxy
+  default:
+    driver: bridge
+
+
+#############
+## secrets ##
+#############
+secrets:
+  authelia_jwt_secret:
+    file: $DOCKERDIR/secrets/authelia_jwt_secret
+  authelia_session_secret:
+    file: $DOCKERDIR/secrets/authelia_session_secret
+  authelia_duo_api_secret_key:
+    file: $DOCKERDIR/secrets/authelia_duo_api_secret_key
+
+
+##############
+## services ##
+##############
+services:
+
+
+  #############
+  ## traefik ##
+  #############
+  traefik:
+    container_name: traefik
+    image: traefik:picodon
+    restart: unless-stopped
+    command:
+      - --global.checkNewVersion=true
+      - --global.sendAnonymousUsage=false
+      - --entryPoints.http.address=:80
+      - --entryPoints.https.address=:443
+      # Allow these IPs to set the X-Forwarded-* headers - Cloudflare IPs: https://www.cloudflare.com/ips/
+      - --entrypoints.https.forwardedHeaders.trustedIPs=173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/12,172.64.0.0/13,131.0.72.0/22
+      - --entryPoints.traefik.address=:8081
+      - --api=true
+      # - --api.insecure=true
+      # - --serversTransport.insecureSkipVerify=true
+      - --log=true
+      - --log.level=WARN # (Default: error) DEBUG, INFO, WARN, ERROR, FATAL, PANIC
+      - --accessLog=true
+      - --accessLog.filePath=/traefik.log
+      - --accessLog.bufferingSize=100
+      - --accessLog.filters.statusCodes=400-499
+      - --providers.docker=true
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
+      # - --providers.docker.defaultrule=Host(`{{ index .Labels "com.docker.compose.service" }}.$DOMAINNAME`)
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.network=t2_proxy
+      - --providers.docker.swarmMode=false
+      - --providers.file.directory=/rules
+      - --providers.file.watch=true
+      # Add dns-cloudflare as default certresolver for all services. Also enables TLS and no need to specify on individual services
+      - --entrypoints.https.http.tls.certresolver=dns-cloudflare
+      - --entrypoints.https.http.tls.domains[0].main=$DOMAINNAME
+      - --entrypoints.https.http.tls.domains[0].sans=*.$DOMAINNAME
+      # - --certificatesResolvers.dns-cloudflare.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory # LetsEncrypt Staging Server - uncomment when testing
+      - --certificatesResolvers.dns-cloudflare.acme.email=$CLOUDFLARE_EMAIL
+      - --certificatesResolvers.dns-cloudflare.acme.storage=/acme.json
+      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.provider=cloudflare
+      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.resolvers=1.1.1.1:53,1.0.0.1:53
+      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.delayBeforeCheck=90 # To delay DNS check and reduce LE hitrate
+    networks:
+      t2_proxy:
+        ipv4_address: $TRAEFIKIP
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+      - target: 8081
+        published: 8081
+        protocol: tcp
+        mode: host
+    volumes:
+      - $DOCKERDIR/traefik2/rules:/rules
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - $DOCKERDIR/traefik2/acme/acme.json:/acme.json
+      - $DOCKERDIR/traefik2/traefik.log:/traefik.log
+      - $DOCKERDIR/shared:/shared
+    environment:
+      - CF_API_EMAIL=$CLOUDFLARE_EMAIL
+      - CF_API_KEY=$CLOUDFLARE_API_KEY
+      - TZ=$TZ
+    labels:
+      - "traefik.enable=true"
+      # HTTP-to-HTTPS Redirect
+      - "traefik.http.routers.http-catchall.entrypoints=http"
+      - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      # HTTP Routers
+      - "traefik.http.routers.traefik-rtr.entrypoints=https"
+      - "traefik.http.routers.traefik-rtr.rule=Host(`traefik.$DOMAINNAME`)"
+      - "traefik.http.routers.traefik-rtr.tls=true"
+      # - "traefik.http.routers.traefik-rtr.tls.certresolver=dns-cloudflare" # Comment out this line after first run of traefik to force the use of wildcard certs
+      - "traefik.http.routers.traefik-rtr.tls.domains[0].main=$DOMAINNAME"
+      - "traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.$DOMAINNAME"
+#      - "traefik.http.routers.traefik-rtr.tls.domains[1].main=$SECONDDOMAINNAME" # Pulls main cert for second domain
+#      - "traefik.http.routers.traefik-rtr.tls.domains[1].sans=*.$SECONDDOMAINNAME" # Pulls wildcard cert for second domain
+      ## Services - API
+      - "traefik.http.routers.traefik-rtr.service=api@internal"
+      ## Middlewares
+      - "traefik.http.routers.traefik-rtr.middlewares=chain-white-list@file"
+
+
+  #############
+  ## pi-hole ##
+  #############
+  pihole:
+    container_name: pihole
+    domainname: docker
+    hostname: pihole
+    image: pihole/pihole:latest
+    ports:
+      - '53:53/tcp'
+      - '53:53/udp'
+      - '8182:80'
+      - '8183:443'
+    restart: unless-stopped
+    depends_on:
+      - traefik
+    volumes:
+      - $DOCKERDIR/pihole/pihole:/etc/pihole
+      - $DOCKERDIR/pihole/dnsmasq.d:/etc/dnsmasq.d
+    networks:
+      - t2_proxy
+    environment:
+      - VIRTUAL_HOST=pihole.$DOMAINNAME
+      - VIRTUAL_PORT=80
+      - TZ=$TZ
+      - WEBPASSWORD=$PIHOLEWEBPASSWORD
+      - DNS1=$PIHOLE_LOCAL_DNS
+      - DNS2=$PIHOLE_UPSTREAM_DNS
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pihole-rtr.entrypoints=https"
+      - "traefik.http.routers.pihole-rtr.rule=Host(`pihole.$DOMAINNAME`)"
+      - "traefik.http.routers.pihole-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.routers.pihole-rtr.service=pihole-svc"
+      - "traefik.http.services.pihole-svc.loadbalancer.server.port=80"
+
+
+  ############
+  ## deconz ##
+  ############
+  deconz:
+    image: marthoc/deconz:latest
+    container_name: deconz
+    restart: unless-stopped
+    depends_on:
+      - pihole
+    networks:
+      - t2_proxy
+    ports:
+      - '2080:2080'
+      - '5090:5090'
+    volumes:
+      - $DOCKERDIR/deconz:/root/.local/share/dresden-elektronik/deCONZ
+      - /etc/localtime:/etc/localtime:ro
+    devices:
+      - /dev/ttyACM1  # Zigbee
+    environment:
+      - DECONZ_WEB_PORT=2080
+      - DECONZ_WS_PORT=2081
+      - DEBUG_INFO=1
+      - DEBUG_APS=0
+      - DEBUG_ZCL=0
+      - DEBUG_ZDP=0
+      - DEBUG_OTAU=0
+      - DECONZ_DEVICE=/dev/ttyACM1
+      - DECONZ_VNC_MODE=1
+      - DECONZ_VNC_PORT=5900
+      - DECONZ_VNC_PASSWORD=$VNCPASSWORD
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.deconz-rtr.entrypoints=https"
+      - "traefik.http.routers.deconz-rtr.rule=Host(`deconz.$DOMAINNAME`)"
+      - "traefik.http.routers.deconz-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.routers.deconz-rtr.service=deconz-svc"
+      - "traefik.http.services.deconz-svc.loadbalancer.server.port=2080"
+
+
+  #######################
+  ## mosquitto-eclipse ##
+  #######################
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    network_mode: host
+    depends_on:
+      - pihole
+    restart: unless-stopped
+    volumes:
+      - $DOCKERDIR/mosquitto/config:/mosquitto/config
+      - $DOCKERDIR/mosquitto/data:/mosquitto/data
+      - $DOCKERDIR/mosquitto/log:/mosquitto/log
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+
+
+  ####################
+  ## home-assistant ##
+  ####################
+  # home-assistant is added using yaml files to traefik
+  homeassistant:
+    container_name: home-assistant
+    image: homeassistant/home-assistant:latest
+    volumes:
+      - $DOCKERDIR/homeassistant/config:/config
+      - $DOCKERDIR/secrets.yaml:/config/secrets.yaml:ro
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    network_mode: host
+    ports:
+      - '8123:8123'
+    devices:
+      - /dev/ttyUSB0  # DSMR
+      - /dev/ttyACM0  # Z-wave
+    depends_on:
+      - pihole
+      - deconz
+    labels:
+      - "traefik.enable=false"
+
+
+########################
+## visual studio code ##
+########################
+  vscode:
+    container_name: vscode
+    image: codercom/code-server:latest
+    ports:
+      - "8443:8080"
+    networks:
+      - t2_proxy
+    restart: unless-stopped
+    depends_on:
+      - pihole
+    volumes:
+      - $USERDIR:/home/coder/project
+      - $DOCKERDIR/vscode/storage:/home/coder/.local/share/code-server
+    command: code-server --auth password --disable-telemetry /home/coder/project
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - PASSWORD=$VSCPASSWORD
+      - PROXY_DOMAIN=$VSC_DOMAIN
+      - TZ=$TZ
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.visualstudiocode-rtr.entrypoints=https"
+      - "traefik.http.routers.visualstudiocode-rtr.rule=Host(`visualstudiocode.$DOMAINNAME`)"
+      - "traefik.http.routers.visualstudiocode-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.routers.visualstudiocode-rtr.service=visualstudiocode-svc"
+      - "traefik.http.services.visualstudiocode-svc.loadbalancer.server.port=8080"
+
+
+##############
+## node-red ##
+##############
+  # Node-RED
+  nodered:
+    container_name: nodered
+    image: nodered/node-red:latest
+    ports:
+      - "1880:1880"
+    networks:
+      - t2_proxy
+    volumes:
+      - $DOCKERDIR/node-red/data:/data
+    depends_on:
+      - homeassistant
+      - pihole
+    environment:
+      TZ: "$TZ"
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.node-red-rtr.entrypoints=https"
+      - "traefik.http.routers.node-red-rtr.rule=Host(`nodered.$DOMAINNAME`)"
+      - "traefik.http.routers.node-red-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.routers.node-red-rtr.service=node-red-svc"
+      - "traefik.http.services.node-red-svc.loadbalancer.server.port=1880"
+
+
+###############
+## AppDaemon ##
+###############
+  appdaemon:
+    container_name: appdaemon
+    image: acockburn/appdaemon:4.0.5
+    volumes:
+      - $DOCKERDIR/appdaemon/conf:/conf
+      - $DOCKERDIR/secrets.yaml:/conf/secrets.yaml:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - '5050:80'
+    networks:
+      - t2_proxy
+    restart: unless-stopped
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+    depends_on:
+      - homeassistant
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.appdaemon-rtr.entrypoints=https"
+      - "traefik.http.routers.appdaemon-rtr.rule=Host(`appdaemon.$DOMAINNAME`)"
+      - "traefik.http.routers.appdaemon-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.routers.appdaemon-rtr.service=appdaemon-svc"
+      - "traefik.http.services.appdaemon-svc.loadbalancer.server.port=80"
+
+
+##############
+## todomini ##
+##############
+  todomini:
+    container_name: todomini
+    image: dennisbakhuis/todomini:latest
+    volumes:
+      - $DOCKERDIR/todomini/dennis:/var/www/dennis/data
+      - $DOCKERDIR/todomini/kim:/var/www/kim/data
+      - /etc/localtime:/etc/localtime:ro
+    sysctls:
+      - net.ipv4.ip_unprivileged_port_start=0
+    ports:
+      - '10001:81'
+      - '10002:82'
+    networks:
+      - t2_proxy
+    restart: unless-stopped
+    user: "$PUID:$PGID"
+    labels:
+      - "traefik.enable=true"
+      # ## Dennis
+      # - "traefik.http.routers.tododennis-rtr.entrypoints=https"
+      # - "traefik.http.routers.tododennis-rtr.rule=Host(`todo-dennis.$DOMAINNAME`)"
+      # - "traefik.http.routers.tododennis-rtr.middlewares=chain-white-list@file"
+      # - "traefik.http.routers.tododennis-rtr.service=tododennis-svc"
+      # - "traefik.http.services.tododennis-svc.loadbalancer.server.port=81"
+      # ## Kim
+      # - "traefik.http.routers.todokim-rtr.entrypoints=https"
+      # - "traefik.http.routers.todokim-rtr.rule=Host(`todo-kim.$DOMAINNAME`)"
+      # - "traefik.http.routers.todokim-rtr.middlewares=chain-white-list@file"
+      # - "traefik.http.routers.todokim-rtr.service=todokim-svc"
+      # - "traefik.http.services.todokim-svc.loadbalancer.server.port=82"
+      ## Single User
+      - "traefik.http.routers.tododennis-rtr.entrypoints=https"
+      - "traefik.http.routers.tododennis-rtr.rule=Host(`todo.$DOMAINNAME`)"
+      - "traefik.http.routers.tododennis-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.tododennis-rtr.service=tododennis-svc"
+      - "traefik.http.services.tododennis-svc.loadbalancer.server.port=81"
+
+
+  #######################
+  ## hass-configurator ##
+  #######################
+  hass-configurator:
+    container_name: hassconfigurator
+    image: causticlab/hass-configurator-docker:x86_64
+    restart: unless-stopped
+    ports:
+      - "3218:3218"
+    networks:
+      - t2_proxy
+    volumes:
+      - $DOCKERDIR/hass-configurator:/config
+      - $DOCKERDIR/homeassistant/config:/hass-config
+      - $DOCKERDIR/secrets.yaml:/hass-config/secrets.yaml
+    user: "$PUID:$PGID"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hassconfig-rtr.entrypoints=https"
+      - "traefik.http.routers.hassconfig-rtr.rule=Host(`hassconfig.$DOMAINNAME`)"
+      - "traefik.http.routers.hassconfig-rtr.service=hassconfig-svc"
+      - "traefik.http.routers.hassconfig-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.services.hassconfig-svc.loadbalancer.server.port=3218"
+
+
+  ##############
+  ## authelia ##
+  ##############
+  authelia:
+    container_name: authelia
+    image: authelia/authelia:latest
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    volumes:
+      - $DOCKERDIR/authelia:/config
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - TZ=$TZ
+      - AUTHELIA_JWT_SECRET_FILE=/run/secrets/authelia_jwt_secret
+      - AUTHELIA_SESSION_SECRET_FILE=/run/secrets/authelia_session_secret
+      - AUTHELIA_DUO_API_SECRET_KEY_FILE=/run/secrets/authelia_duo_api_secret_key
+    secrets:
+      - authelia_jwt_secret
+      - authelia_session_secret
+      - authelia_duo_api_secret_key
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.authelia-rtr.entrypoints=https"
+      - "traefik.http.routers.authelia-rtr.rule=Host(`authelia.$DOMAINNAME`)"
+      - "traefik.http.routers.authelia-rtr.service=authelia-svc"
+      - "traefik.http.routers.authelia-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.services.authelia-svc.loadbalancer.server.port=9091"
+

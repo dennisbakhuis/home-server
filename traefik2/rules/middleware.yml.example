@@ -1,0 +1,57 @@
+http:
+  middlewares:
+    middlewares-basic-auth:
+      basicAuth:
+        usersFile: "/shared/.htpasswd"
+        realm: "Traefik 2 Basic Auth"
+
+    middlewares-rate-limit:
+      rateLimit:
+        average: 100
+        burst: 50
+
+    middlewares-secure-headers:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - OPTIONS
+          - PUT
+        accessControlMaxAge: 100
+        hostsProxyHeaders:
+          - "X-Forwarded-Host"
+        sslRedirect: true
+        stsSeconds: 63072000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        forceSTSHeader: true
+        # frameDeny: true #overwritten by customFrameOptionsValue
+        customFrameOptionsValue: "allow-from https:<YOUR_DOMAIN>"
+        contentTypeNosniff: true
+        browserXssFilter: true
+        # sslForceHost: true # add sslHost to all of the services
+        # sslHost: "<YOUR_DOMAIN>"
+        referrerPolicy: "same-origin"
+        # Setting contentSecurityPolicy is more secure but it can break things. Proper auth will reduce the risk.
+        # the below line also breaks some apps due to 'none' - sonarr, radarr, etc.
+        # contentSecurityPolicy: "frame-ancestors '*.example.com:*';object-src 'none';script-src 'none';"
+        featurePolicy: "camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+        customResponseHeaders:
+          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex,"
+          server: ""
+
+    middlewares-white-list:
+      ipWhiteList:
+        sourceRange:
+          - "127.0.0.1/32"
+          - "<YOUR LOCAL IP RANGE>/16"
+          - "<YOUR WAN IP>/32"
+        ipStrategy:
+          depth: 1
+
+    middlewares-authelia:
+      forwardAuth:
+        address: "http://authelia:9091/api/verify?rd=https://authelia.<YOUR_DOMAIN>"
+        trustForwardHeader: true
+        authResponseHeaders:
+          - "Remote-User"
+          - "Remote-Groups"

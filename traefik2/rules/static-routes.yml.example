@@ -1,0 +1,16 @@
+http:
+  routers:
+    home-assistant-rtr:
+      rule: "HostHeader(`<YOUR HOME ASSISTANT URL>`)"
+      entryPoints:
+        - https
+      middlewares:
+        - chain-no-auth
+      service: home-assistant-svc
+      tls:
+        certResolver: dns-cloudflare
+  services:
+    home-assistant-svc:
+      loadBalancer:
+        servers:
+          - url: "<YOUR HOME ASSISTANT HTTP URL>"
