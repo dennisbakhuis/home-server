@@ -17,4 +17,4 @@ dim_lights_tv_on:
   lights:
     - light.woonkamer
   dim_levels:
-    - 64
+    - 102

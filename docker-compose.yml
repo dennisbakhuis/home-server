@@ -425,3 +425,21 @@ services:
       - "traefik.http.routers.authelia-rtr.middlewares=chain-authelia@file"
       - "traefik.http.services.authelia-svc.loadbalancer.server.port=9091"
 
+
+
+  ####################
+  ## docker-monitor ##
+  ####################
+  # monitor:
+  #   image: jordandrako/monitor
+  #   container_name: monitor
+  #   restart: unless-stopped
+  #   network_mode: host
+  #   privileged: true
+  #   volumes:
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - $DOCKERDIR/docker-monitor:/config
+  #     - /path/to/config:/config
+
+
+

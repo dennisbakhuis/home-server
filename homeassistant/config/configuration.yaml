@@ -19,10 +19,6 @@ panel_iframe:
     title: Configurator
     icon: mdi:wrench
     url: !secret configurator_url
-  nodered:
-    title: Node-Red
-    icon: mdi:shuffle-variant
-    url: !secret nodered_url
 
 
 alarm_control_panel:
@@ -80,68 +76,16 @@ script: !include scripts.yaml
 scene: !include scenes.yaml
 
 
-sensor:
-  - platform: dsmr
-    port: /dev/ttyUSB0
-    dsmr_version: 4
-  - platform: buienradar
-    monitored_conditions:
-      - stationname
-      - barometerfc
-      - barometerfcname
-      - conditioncode
-      - condition
-      - conditiondetailed
-      - conditionexact
-      - symbol
-      - feeltemperature
-      - humidity
-      - temperature
-      - groundtemperature
-      - windspeed
-      - windforce
-      - winddirection
-      - windazimuth
-      - pressure
-      - visibility
-      - windgust
-      - precipitation
-      - irradiance
-      - precipitation_forecast_average
-      - precipitation_forecast_total
-      - rainlast24hour
-      - rainlasthour
+sensor: !include_dir_merge_list sensors/
 
 
-# influxdb:
-#   host: !secret influxdb_host
-#   include:
-#     entities:
-#       - sensor.power_consumption
-#       - sensor.power_consumption_low
-#       - sensor.power_consumption_normal
-#       - sensor.gas_consumption
-
-
-utility_meter:
-  energy_daily_power:
-    source: sensor.power_consumption
-    cycle: daily
-  energy_daily_gas:
-    source: sensor.gas_consumption
-    cycle: daily
-  energy_weekly_power:
-    source: sensor.power_consumption
-    cycle: weekly
-  energy_weekly_gas:
-    source: sensor.gas_consumption
-    cycle: weekly
-  energy_monthly_power:
-    source: sensor.power_consumption
-    cycle: monthly
-  energy_monthly_gas:
-    source: sensor.gas_consumption
-    cycle: monthly
+influxdb:
+  host: !secret influxdb_host
+  include:
+    entities:
+      - sensor.energy_consumption_tarif_1
+      - sensor.energy_consumption_tarif_2
+      - sensor.gas_consumption
 
 
 mqtt:
@@ -225,7 +169,7 @@ webostv:
       mac: !secret webostv_mac
   customize:
     sources:
-      - HDMI 3
+      - HDMI3
       - Netflix
       - Prime Video
 
