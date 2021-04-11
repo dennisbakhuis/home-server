@@ -80,12 +80,18 @@ sensor: !include_dir_merge_list sensors/
 
 
 influxdb:
+  api_version: 2
+  ssl: false
   host: !secret influxdb_host
+  port: !secret influxdb_port
+  token: !secret influxdb_token
+  organization: !secret influxdb_organization
+  bucket: !secret influxdb_bucket
   include:
     entities:
-      - sensor.energy_consumption_tarif_1
-      - sensor.energy_consumption_tarif_2
+      - sensor.energy_consumption_totals
       - sensor.gas_consumption
+      - sensor.br_temperature
 
 
 mqtt:
