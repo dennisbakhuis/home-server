@@ -44,7 +44,7 @@ services:
       - --entryPoints.https.address=:443
       # - --entryPoints.ssh.address=:22
       # Allow these IPs to set the X-Forwarded-* headers - Cloudflare IPs: https://www.cloudflare.com/ips/
-      - --entrypoints.https.forwardedHeaders.trustedIPs=173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/12,172.64.0.0/13,131.0.72.0/22
+      - --entrypoints.https.forwardedHeaders.trustedIPs=173.245.48.0/20, 103.21.244.0/22, 103.22.200.0/22, 103.31.4.0/22, 141.101.64.0/18, 108.162.192.0/18, 190.93.240.0/20, 188.114.96.0/20, 197.234.240.0/22, 198.41.128.0/17, 162.158.0.0/15, 172.64.0.0/13, 131.0.72.0/22, 104.16.0.0/13, 104.24.0.0/14
       - --entryPoints.traefik.address=:8081
       - --api=true
       # - --api.insecure=true
@@ -245,33 +245,33 @@ services:
 ########################
 ## visual studio code ##
 ########################
-  vscode:
-    container_name: vscode
-    image: codercom/code-server:latest
-    ports:
-      - "8443:8080"
-    networks:
-      - t2_proxy
-    restart: unless-stopped
-    depends_on:
-      - pihole
-    volumes:
-      - $USERDIR:/home/coder/project
-      - $DOCKERDIR/vscode/storage:/home/coder/.local/share/code-server
-    command: code-server --auth password --disable-telemetry /home/coder/project
-    environment:
-      - PUID=$PUID
-      - PGID=$PGID
-      - PASSWORD=$VSCPASSWORD
-      - PROXY_DOMAIN=$VSC_DOMAIN
-      - TZ=$TZ
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.visualstudiocode-rtr.entrypoints=https"
-      - "traefik.http.routers.visualstudiocode-rtr.rule=Host(`visualstudiocode.$DOMAINNAME`)"
-      - "traefik.http.routers.visualstudiocode-rtr.middlewares=chain-white-list@file"
-      - "traefik.http.routers.visualstudiocode-rtr.service=visualstudiocode-svc"
-      - "traefik.http.services.visualstudiocode-svc.loadbalancer.server.port=8080"
+  # vscode:
+  #   container_name: vscode
+  #   image: codercom/code-server:latest
+  #   ports:
+  #     - "8443:8080"
+  #   networks:
+  #     - t2_proxy
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - pihole
+  #   volumes:
+  #     - $USERDIR:/home/coder/project
+  #     - $DOCKERDIR/vscode/storage:/home/coder/.local/share/code-server
+  #   command: code-server --auth password --disable-telemetry /home/coder/project
+  #   environment:
+  #     - PUID=$PUID
+  #     - PGID=$PGID
+  #     - PASSWORD=$VSCPASSWORD
+  #     - PROXY_DOMAIN=$VSC_DOMAIN
+  #     - TZ=$TZ
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.visualstudiocode-rtr.entrypoints=https"
+  #     - "traefik.http.routers.visualstudiocode-rtr.rule=Host(`visualstudiocode.$DOMAINNAME`)"
+  #     - "traefik.http.routers.visualstudiocode-rtr.middlewares=chain-white-list@file"
+  #     - "traefik.http.routers.visualstudiocode-rtr.service=visualstudiocode-svc"
+  #     - "traefik.http.services.visualstudiocode-svc.loadbalancer.server.port=8080"
 
 
 ##############
@@ -334,42 +334,42 @@ services:
 ##############
 ## todomini ##
 ##############
-  todomini:
-    container_name: todomini
-    image: dennisbakhuis/todomini:latest
-    volumes:
-      - $DOCKERDIR/todomini/dennis:/var/www/dennis/data
-      - $DOCKERDIR/todomini/kim:/var/www/kim/data
-      - /etc/localtime:/etc/localtime:ro
-    sysctls:
-      - net.ipv4.ip_unprivileged_port_start=0
-    ports:
-      - '10001:81'
-      - '10002:82'
-    networks:
-      - t2_proxy
-    restart: unless-stopped
-    user: "$PUID:$PGID"
-    labels:
-      - "traefik.enable=true"
-      # ## Dennis
-      # - "traefik.http.routers.tododennis-rtr.entrypoints=https"
-      # - "traefik.http.routers.tododennis-rtr.rule=Host(`todo-dennis.$DOMAINNAME`)"
-      # - "traefik.http.routers.tododennis-rtr.middlewares=chain-white-list@file"
-      # - "traefik.http.routers.tododennis-rtr.service=tododennis-svc"
-      # - "traefik.http.services.tododennis-svc.loadbalancer.server.port=81"
-      # ## Kim
-      # - "traefik.http.routers.todokim-rtr.entrypoints=https"
-      # - "traefik.http.routers.todokim-rtr.rule=Host(`todo-kim.$DOMAINNAME`)"
-      # - "traefik.http.routers.todokim-rtr.middlewares=chain-white-list@file"
-      # - "traefik.http.routers.todokim-rtr.service=todokim-svc"
-      # - "traefik.http.services.todokim-svc.loadbalancer.server.port=82"
-      ## Single User
-      - "traefik.http.routers.tododennis-rtr.entrypoints=https"
-      - "traefik.http.routers.tododennis-rtr.rule=Host(`todo.$DOMAINNAME`)"
-      - "traefik.http.routers.tododennis-rtr.middlewares=chain-authelia@file"
-      - "traefik.http.routers.tododennis-rtr.service=tododennis-svc"
-      - "traefik.http.services.tododennis-svc.loadbalancer.server.port=81"
+  # todomini:
+  #   container_name: todomini
+  #   image: dennisbakhuis/todomini:latest
+  #   volumes:
+  #     - $DOCKERDIR/todomini/dennis:/var/www/dennis/data
+  #     - $DOCKERDIR/todomini/kim:/var/www/kim/data
+  #     - /etc/localtime:/etc/localtime:ro
+  #   sysctls:
+  #     - net.ipv4.ip_unprivileged_port_start=0
+  #   ports:
+  #     - '10001:81'
+  #     - '10002:82'
+  #   networks:
+  #     - t2_proxy
+  #   restart: unless-stopped
+  #   user: "$PUID:$PGID"
+  #   labels:
+  #     - "traefik.enable=true"
+  #     # ## Dennis
+  #     # - "traefik.http.routers.tododennis-rtr.entrypoints=https"
+  #     # - "traefik.http.routers.tododennis-rtr.rule=Host(`todo-dennis.$DOMAINNAME`)"
+  #     # - "traefik.http.routers.tododennis-rtr.middlewares=chain-white-list@file"
+  #     # - "traefik.http.routers.tododennis-rtr.service=tododennis-svc"
+  #     # - "traefik.http.services.tododennis-svc.loadbalancer.server.port=81"
+  #     # ## Kim
+  #     # - "traefik.http.routers.todokim-rtr.entrypoints=https"
+  #     # - "traefik.http.routers.todokim-rtr.rule=Host(`todo-kim.$DOMAINNAME`)"
+  #     # - "traefik.http.routers.todokim-rtr.middlewares=chain-white-list@file"
+  #     # - "traefik.http.routers.todokim-rtr.service=todokim-svc"
+  #     # - "traefik.http.services.todokim-svc.loadbalancer.server.port=82"
+  #     ## Single User
+  #     - "traefik.http.routers.tododennis-rtr.entrypoints=https"
+  #     - "traefik.http.routers.tododennis-rtr.rule=Host(`todo.$DOMAINNAME`)"
+  #     - "traefik.http.routers.tododennis-rtr.middlewares=chain-authelia@file"
+  #     - "traefik.http.routers.tododennis-rtr.service=tododennis-svc"
+  #     - "traefik.http.services.tododennis-svc.loadbalancer.server.port=81"
 
 
   #######################
@@ -400,31 +400,31 @@ services:
   ##############
   ## authelia ##
   ##############
-  authelia:
-    container_name: authelia
-    image: authelia/authelia:latest
-    restart: unless-stopped
-    networks:
-      - t2_proxy
-    volumes:
-      - $DOCKERDIR/authelia:/config
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - TZ=$TZ
-      - AUTHELIA_JWT_SECRET_FILE=/run/secrets/authelia_jwt_secret
-      - AUTHELIA_SESSION_SECRET_FILE=/run/secrets/authelia_session_secret
-      - AUTHELIA_DUO_API_SECRET_KEY_FILE=/run/secrets/authelia_duo_api_secret_key
-    secrets:
-      - authelia_jwt_secret
-      - authelia_session_secret
-      - authelia_duo_api_secret_key
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.authelia-rtr.entrypoints=https"
-      - "traefik.http.routers.authelia-rtr.rule=Host(`authelia.$DOMAINNAME`)"
-      - "traefik.http.routers.authelia-rtr.service=authelia-svc"
-      - "traefik.http.routers.authelia-rtr.middlewares=chain-authelia@file"
-      - "traefik.http.services.authelia-svc.loadbalancer.server.port=9091"
+  # authelia:
+  #   container_name: authelia
+  #   image: authelia/authelia:latest
+  #   restart: unless-stopped
+  #   networks:
+  #     - t2_proxy
+  #   volumes:
+  #     - $DOCKERDIR/authelia:/config
+  #     - /etc/localtime:/etc/localtime:ro
+  #   environment:
+  #     - TZ=$TZ
+  #     - AUTHELIA_JWT_SECRET_FILE=/run/secrets/authelia_jwt_secret
+  #     - AUTHELIA_SESSION_SECRET_FILE=/run/secrets/authelia_session_secret
+  #     - AUTHELIA_DUO_API_SECRET_KEY_FILE=/run/secrets/authelia_duo_api_secret_key
+  #   secrets:
+  #     - authelia_jwt_secret
+  #     - authelia_session_secret
+  #     - authelia_duo_api_secret_key
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.authelia-rtr.entrypoints=https"
+  #     - "traefik.http.routers.authelia-rtr.rule=Host(`authelia.$DOMAINNAME`)"
+  #     - "traefik.http.routers.authelia-rtr.service=authelia-svc"
+  #     - "traefik.http.routers.authelia-rtr.middlewares=chain-authelia@file"
+  #     - "traefik.http.services.authelia-svc.loadbalancer.server.port=9091"
 
 
 
