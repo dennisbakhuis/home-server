@@ -14,7 +14,7 @@ listen_serre:
           entity_id: media_player.denon_avr_zone2
           data_template:
             volume_level: 0.30
-            
+
 media_off_serre:
     alias: media uit serre
     sequence:
@@ -66,17 +66,15 @@ watch_cast:
           entity_id: switch.plug_2_xbox
         - service: switch.turn_on
           entity_id: switch.plug_1_subwoover
-        - delay: 00:00:01
+        - delay: 00:00:02
         - service: media_player.volume_set
           entity_id: media_player.denon_avr
           data_template:
-            volume_level: 0.46
-   
+            volume_level: 0.50
+
 play_xbox:
     alias: Gamen
     sequence:
-        - service: switch.turn_on
-          entity_id: switch.plug_2_xbox
         - service: media_player.turn_on
           entity_id: media_player.denon_avr
         - service: media_player.turn_on
@@ -85,7 +83,7 @@ play_xbox:
         - service: media_player.select_source
           entity_id: media_player.denon_avr
           data_template:
-            source: Xbox One
+            source: Xbox
         - service: media_player.select_source
           entity_id: media_player.lg_television
           data_template:
@@ -115,7 +113,7 @@ media_off:
 ###################
 
 sound_alarm:
-  alias: Sound alarm for two minutes    
+  alias: Sound alarm for two minutes
   sequence:
       - service: switch.turn_on
         data:
@@ -144,7 +142,7 @@ sound_alarm:
           #entity_id: media_player.yamaha_receiver_living_room
 
 warning_flash:
-  alias: Flash lights 
+  alias: Flash lights
   sequence:
   - service: switch.turn_on
     data:

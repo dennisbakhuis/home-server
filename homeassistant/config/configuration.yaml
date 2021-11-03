@@ -173,9 +173,4 @@ webostv:
     service: wake_on_lan.send_magic_packet
     data:
       mac: !secret webostv_mac
-  customize:
-    sources:
-      - HDMI3
-      - Netflix
-      - Prime Video
 

@@ -1,6 +1,8 @@
 # Secrets
 secrets.yaml
+secrets.yaml.backup
 secrets/
+secrets*
 
 # Docker-compose .env file
 .env
