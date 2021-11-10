@@ -2,7 +2,6 @@ import adbase as ad
 
 class Multi_Switch_Kitchen(ad.ADBase):
 
-
     TOPIC_LEFT = "shellies/shelly1-C4950C/input/0"
     TOPIC_RIGHT = "shellies/shelly1-C4E76B/input/0"
     HIGH_INPUT_SELECT = "input_select.kitchen_higher_dimlevel"
@@ -48,35 +47,35 @@ class Multi_Switch_Kitchen(ad.ADBase):
 
         # Listen to left switch
         self.mqtt.listen_event(
-            self.push_translator_left, 
-            "MQTT_MESSAGE", 
+            self.push_translator_left,
+            "MQTT_MESSAGE",
             topic=self.TOPIC_LEFT
         )
         # Listen to right switch
         self.mqtt.listen_event(
-            self.push_translator_right, 
-            "MQTT_MESSAGE", 
+            self.push_translator_right,
+            "MQTT_MESSAGE",
             topic=self.TOPIC_RIGHT
         )
         # Listen to motion
         self.hass.listen_state(
-            self.auto_light_callback, 
+            self.auto_light_callback,
             self.PIR_ENTITY,
         )
         # Listen to manual change
         self.hass.listen_state(
-            self.dim_level_change_callback, 
+            self.dim_level_change_callback,
             self.LOW_INPUT_SELECT,
         )
         self.hass.listen_state(
-            self.dim_level_change_callback, 
+            self.dim_level_change_callback,
             self.HIGH_INPUT_SELECT,
         )
 
-    
+
     def get_dim_state(self, entity, levels):
         level_name = self.adbase.get_state(
-            entity, 
+            entity,
             namespace='hass'
         )
         low_names = [x[0] for x in levels]
@@ -101,7 +100,7 @@ class Multi_Switch_Kitchen(ad.ADBase):
 
     def short_push_action_left(self):
         light_state = self.adbase.get_state(
-            self.LIGHT_KITCHEN, 
+            self.LIGHT_KITCHEN,
             namespace='hass'
         )
         if light_state == "on":
@@ -170,7 +169,7 @@ class Multi_Switch_Kitchen(ad.ADBase):
 
     def auto_light_off(self):
         light_state = self.adbase.get_state(
-            self.LIGHT_KITCHEN, 
+            self.LIGHT_KITCHEN,
             namespace='hass'
         )
         auto_light_state = self.adbase.get_state(
@@ -249,4 +248,4 @@ class Multi_Switch_Kitchen(ad.ADBase):
 
 
 
-        
+

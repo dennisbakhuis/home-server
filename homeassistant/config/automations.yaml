@@ -34,3 +34,29 @@
   - entity_id: light.hal
     service: light.turn_off
   initial_state: true
+- id: '1636567897700'
+  alias: Toggle woonkamer
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: switch.eettafel_midden
+  condition: []
+  action:
+  - type: toggle
+    device_id: 1427c6e833e04472a42615368ba9a279
+    entity_id: light.eettafel
+    domain: light
+  mode: single
+- id: '1636567992900'
+  alias: Toggle woonkamer
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: switch.eettafel_rechts
+  condition: []
+  action:
+  - type: toggle
+    device_id: d187b4e934c61bfc5d68fcc81ff4fac5
+    entity_id: light.woonkamer
+    domain: light
+  mode: single

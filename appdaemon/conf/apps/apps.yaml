@@ -2,9 +2,9 @@ keuken_schakelaars:
   module: multi_switch_kitchen
   class: Multi_Switch_Kitchen
 
-woonkamer_schakelaars:
-  module: multi_switch_living_room
-  class: Multi_Switch_Living_Room
+# woonkamer_schakelaars:
+#   module: multi_switch_living_room
+#   class: Multi_Switch_Living_Room
 
 boekenkast_slave_light:
   module: bookshelf_slave_light

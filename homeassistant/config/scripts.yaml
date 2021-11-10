@@ -61,7 +61,7 @@ watch_cast:
         - service: media_player.select_source
           entity_id: media_player.lg_television
           data_template:
-            source: HDMI 3
+            source: AVR-X2700H
         - service: switch.turn_off
           entity_id: switch.plug_2_xbox
         - service: switch.turn_on
@@ -70,7 +70,7 @@ watch_cast:
         - service: media_player.volume_set
           entity_id: media_player.denon_avr
           data_template:
-            volume_level: 0.50
+            volume_level: 0.55
 
 play_xbox:
     alias: Gamen
@@ -87,12 +87,12 @@ play_xbox:
         - service: media_player.select_source
           entity_id: media_player.lg_television
           data_template:
-            source: HDMI 3
+            source: AVR-X2700H
         - delay: 00:00:01
         - service: media_player.volume_set
           entity_id: media_player.denon_avr
           data_template:
-            volume_level: 0.46
+            volume_level: 0.45
         - service: switch.turn_on
           entity_id: switch.plug_1_subwoover
 

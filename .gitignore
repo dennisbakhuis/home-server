@@ -54,3 +54,5 @@ traefik2/rules/static-routes.yml
 
 # vscode
 vscode/
+
+*.log*
