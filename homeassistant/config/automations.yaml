@@ -15,9 +15,11 @@
       after_offset: -01:00:00
       condition: sun
   action:
-  - entity_id: light.hal
-    service: light.turn_on
+  - service: switch.turn_on
+    target:
+      entity_id: switch.licht_hal
   initial_state: true
+  mode: single
 - id: hal_licht_uit
   alias: Automatisch licht hal uit
   trigger:
@@ -31,9 +33,11 @@
     entity_id: automation.automatisch_licht_hal
     state: 'on'
   action:
-  - entity_id: light.hal
-    service: light.turn_off
+  - service: switch.turn_off
+    target:
+      entity_id: switch.licht_hal
   initial_state: true
+  mode: single
 - id: '1636567897700'
   alias: Toggle woonkamer
   description: ''
