@@ -98,38 +98,6 @@ mqtt:
   broker: !secret mqttbroker
 
 
-# light:
-#   - platform: mqtt
-#     name: "Hal"
-#     command_topic: !secret hal_command
-#     payload_on: "on"
-#     payload_off: "off"
-#     state_topic: !secret hal_state
-#   - platform: mqtt
-#     name: "Serre"
-#     command_topic: !secret serre_command
-#     payload_on: "on"
-#     payload_off: "off"
-#     state_topic: !secret serre_state
-  # - platform: mqtt
-  #   name: "Portiek"
-  #   command_topic: !secret portiek_command
-  #   payload_on: "on"
-  #   payload_off: "off"
-  #   state_topic: !secret portiek_state
-  # - platform: mqtt
-  #   name: "Voordeur"
-  #   command_topic: !secret voordeur_command
-  #   payload_on: "on"
-  #   payload_off: "off"
-  #   state_topic: !secret voordeur_state
-
-
-# homeconnect:
-#   client_id: !secret homeconnectclientid
-#   client_secret: !secret homeconnectclientsecret
-
-
 input_select:
   kitchen_lower_dimlevel:
     name: Keuken laag dimstand

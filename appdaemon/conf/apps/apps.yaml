@@ -18,3 +18,11 @@ dim_lights_tv_on:
     - light.woonkamer
   dim_levels:
     - 102
+
+doorbell_notifier:
+  module: doorbell_notifier
+  class: DoorbellNotifier
+  doorbell_sensor: binary_sensor.deurbel
+  notify_service: everybody
+  title: Doorbell notifier
+  message: Ding dong!

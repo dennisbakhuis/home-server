@@ -163,7 +163,7 @@ services:
   ## deconz ##
   ############
   deconz:
-    image: marthoc/deconz:latest
+    image: deconzcommunity/deconz:latest
     container_name: deconz
     restart: unless-stopped
     depends_on:
@@ -175,7 +175,7 @@ services:
       - '5090:5090'
       - '2081:2081'
     volumes:
-      - $DOCKERDIR/deconz:/root/.local/share/dresden-elektronik/deCONZ
+      - $DOCKERDIR/deconz:/opt/deCONZ
       - /etc/localtime:/etc/localtime:ro
     devices:
       - /dev/ttyACM1  # Zigbee
@@ -444,5 +444,30 @@ services:
   #     - $DOCKERDIR/docker-monitor:/config
   #     - /path/to/config:/config
 
+
+  ##############
+  ## linkding ##
+  ##############
+  # https://github.com/sissbruecker/linkding
+  # create user: docker-compose exec linkding python manage.py createsuperuser --username=joe --email=joe@example.com
+  linkding:
+    image: sissbruecker/linkding:latest
+    container_name: linkding
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    ports:
+      - "9090:9090"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - $DOCKERDIR/linkding:/etc/linkding/data
+    user: "$PUID:$PGID"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.linkding-rtr.entrypoints=https"
+      - "traefik.http.routers.linkding-rtr.rule=Host(`linkding.$DOMAINNAME`)"
+      - "traefik.http.routers.linkding-rtr.service=linkding-svc"
+      - "traefik.http.routers.linkding-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.services.linkding-svc.loadbalancer.server.port=9090"
 
 
