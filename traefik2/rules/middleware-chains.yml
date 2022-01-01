@@ -21,9 +21,3 @@ http:
           - middlewares-secure-headers
           - middlewares-basic-auth
 
-    chain-authelia:
-      chain:
-        middlewares:
-          - middlewares-rate-limit
-          - middlewares-secure-headers
-          - middlewares-authelia
