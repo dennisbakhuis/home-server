@@ -1,15 +1,9 @@
-keuken_schakelaars:
-  module: multi_switch_kitchen
-  class: Multi_Switch_Kitchen
-
-# woonkamer_schakelaars:
-#   module: multi_switch_living_room
-#   class: Multi_Switch_Living_Room
-
+# Light will follow other lights
 boekenkast_slave_light:
   module: bookshelf_slave_light
   class: Bookshelf_Slave_Light
 
+# Lights dim or reset according to TV on/off
 dim_lights_tv_on:
   module: dim_lights_on_entity
   class: Dim_Lights_On_Entity
@@ -19,6 +13,7 @@ dim_lights_tv_on:
   dim_levels:
     - 102
 
+# Message when doorbell ding dongs
 doorbell_notifier:
   module: doorbell_notifier
   class: DoorbellNotifier
@@ -26,3 +21,28 @@ doorbell_notifier:
   notify_service: everybody
   title: Doorbell notifier
   message: Ding dong!
+
+# New kitchen switch protocol
+multi_switch_kitchen:
+  module: kitchen_light_switcher
+  class: KitchenLightSwitcher
+  switch_left: switch.shelly_keuken_links
+  switch_right: switch.shelly_keuken_rechts
+  motion_sensors:
+    - binary_sensor.pir_b_keuken
+  illuminance_sensor: sensor.estimated_illuminance
+  light_group: light.keuken
+  auto_light_toggle: input_boolean.automatic_light_kitchen
+  relax_input_select: input_select.kitchen_lower_dimlevel
+  work_input_select: input_select.kitchen_higher_dimlevel
+  relax_scenes:
+    Uit: scene.keuken_relax_off
+    Twee: scene.keuken_relax_two
+    Drie: scene.keuken_relax_three
+    Alles: scene.keuken_relax_all
+  work_scenes:
+    Geel: scene.keuken_work_yellow
+    Wit: scene.keuken_work_white
+  light_duration: 120
+  illumination_threshold: 2200
+  log_level: DEBUG

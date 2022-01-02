@@ -190,20 +190,20 @@ services:
   #######################
   ## mosquitto-eclipse ##
   #######################
-  mosquitto:
-    image: eclipse-mosquitto:latest
-    container_name: mosquitto
-    network_mode: host
-    depends_on:
-      - pihole
-    restart: unless-stopped
-    volumes:
-      - $DOCKERDIR/mosquitto/config:/mosquitto/config
-      - $DOCKERDIR/mosquitto/data:/mosquitto/data
-      - $DOCKERDIR/mosquitto/log:/mosquitto/log
-    ports:
-      - "1883:1883"
-      - "9001:9001"
+  # mosquitto:
+  #   image: eclipse-mosquitto:latest
+  #   container_name: mosquitto
+  #   network_mode: host
+  #   depends_on:
+  #     - pihole
+  #   restart: unless-stopped
+  #   volumes:
+  #     - $DOCKERDIR/mosquitto/config:/mosquitto/config
+  #     - $DOCKERDIR/mosquitto/data:/mosquitto/data
+  #     - $DOCKERDIR/mosquitto/log:/mosquitto/log
+  #   ports:
+  #     - "1883:1883"
+  #     - "9001:9001"
 
 
   ####################
@@ -279,6 +279,7 @@ services:
     networks:
       - t2_proxy
     restart: unless-stopped
+    user: "$PUID:$PGID"
     environment:
       - PUID=$PUID
       - PGID=$PGID
@@ -296,26 +297,26 @@ services:
   #######################
   ## hass-configurator ##
   #######################
-  hass-configurator:
-    container_name: hassconfigurator
-    image: causticlab/hass-configurator-docker:x86_64
-    restart: unless-stopped
-    ports:
-      - "3218:3218"
-    networks:
-      - t2_proxy
-    volumes:
-      - $DOCKERDIR/hass-configurator:/config
-      - $DOCKERDIR/homeassistant/config:/hass-config
-      - $DOCKERDIR/secrets.yaml:/hass-config/secrets.yaml
-    user: "$PUID:$PGID"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.hassconfig-rtr.entrypoints=https"
-      - "traefik.http.routers.hassconfig-rtr.rule=Host(`hassconfig.$DOMAINNAME`)"
-      - "traefik.http.routers.hassconfig-rtr.service=hassconfig-svc"
-      - "traefik.http.routers.hassconfig-rtr.middlewares=chain-white-list@file"
-      - "traefik.http.services.hassconfig-svc.loadbalancer.server.port=3218"
+  # hass-configurator:
+  #   container_name: hassconfigurator
+  #   image: causticlab/hass-configurator-docker:x86_64
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3218:3218"
+  #   networks:
+  #     - t2_proxy
+  #   volumes:
+  #     - $DOCKERDIR/hass-configurator:/config
+  #     - $DOCKERDIR/homeassistant/config:/hass-config
+  #     - $DOCKERDIR/secrets.yaml:/hass-config/secrets.yaml
+  #   user: "$PUID:$PGID"
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.hassconfig-rtr.entrypoints=https"
+  #     - "traefik.http.routers.hassconfig-rtr.rule=Host(`hassconfig.$DOMAINNAME`)"
+  #     - "traefik.http.routers.hassconfig-rtr.service=hassconfig-svc"
+  #     - "traefik.http.routers.hassconfig-rtr.middlewares=chain-white-list@file"
+  #     - "traefik.http.services.hassconfig-svc.loadbalancer.server.port=3218"
 
 
   ##############

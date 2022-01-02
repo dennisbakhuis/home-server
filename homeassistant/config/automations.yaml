@@ -39,7 +39,7 @@
   initial_state: true
   mode: single
 - id: '1636567897700'
-  alias: Toggle woonkamer
+  alias: Toggle eettafellicht
   description: ''
   trigger:
   - platform: state
@@ -52,7 +52,7 @@
     domain: light
   mode: single
 - id: '1636567992900'
-  alias: Toggle woonkamer
+  alias: Toggle woonkamerlicht
   description: ''
   trigger:
   - platform: state

@@ -1,6 +1,6 @@
 # Home assistant Configuration
 # Author: Dennis Bakhuis
-# Date  : 30 October 2020
+# Date  : 2022-01-01
 homeassistant:
   name: !secret homeassistantname
   latitude: !secret latitude
@@ -14,21 +14,14 @@ homeassistant:
         - everybody
 
 
-panel_iframe:
-  configurator:
-    title: Configurator
-    icon: mdi:wrench
-    url: !secret configurator_url
-
-
-alarm_control_panel:
-  - platform: manual
-    name: !secret alarm_name
-    arming_time: 20
-    trigger_time: 300
-
-
 default_config:
+
+
+# panel_iframe:
+#   configurator:
+#     title: Configurator
+#     icon: mdi:wrench
+#     url: !secret configurator_url
 
 
 http:
@@ -94,10 +87,6 @@ influxdb:
       - sensor.br_temperature
 
 
-mqtt:
-  broker: !secret mqttbroker
-
-
 input_select:
   kitchen_lower_dimlevel:
     name: Keuken laag dimstand
@@ -107,12 +96,14 @@ input_select:
       - Drie
       - Twee
     initial: Uit
+
   kitchen_higher_dimlevel:
     name: Keuken hoog dimstand
     options:
       - Wit
       - Geel
     initial: Wit
+
   eettafel_dimlevel:
     name: Eettafel dimstand
     options:
@@ -120,11 +111,14 @@ input_select:
       - Dimstand 2
       - Dimstand 3
     initial: Dimstand 1
+
+
 input_boolean:
   automatic_light_kitchen:
     name: Automatisch licht keuken
     initial: on
     icon: 'mdi:lightbulb'
+
   automatic_light_hal:
     name: Automatisch licht hal
     initial: on
@@ -141,4 +135,3 @@ webostv:
     service: wake_on_lan.send_magic_packet
     data:
       mac: !secret webostv_mac
-

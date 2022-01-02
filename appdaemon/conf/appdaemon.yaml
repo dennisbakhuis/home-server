@@ -5,12 +5,12 @@ appdaemon:
       ha_url: !secret ha_url
       token: !secret ha_token
       namespace: hass
-    MQTT:
-      type: mqtt
-      client_host: !secret mqttbroker
-      client_port: !secret mqtt_port
-      client_id: !secret mqtt_client_id
-      namespace: mqtt
+    # MQTT:
+    #   type: mqtt
+    #   client_host: !secret mqttbroker
+    #   client_port: !secret mqtt_port
+    #   client_id: !secret mqtt_client_id
+    #   namespace: mqtt
   latitude: !secret latitude
   longitude: !secret longitude
   elevation: !secret elevation
