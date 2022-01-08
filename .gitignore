@@ -56,3 +56,5 @@ traefik2/rules/static-routes.yml
 vscode/
 
 *.log*
+
+zwavejs/
