@@ -4,14 +4,9 @@ I install docker and run the following services:
 - Traefik (reversed proxy)
 - Pihole (DNS server to block adds)
 - Deconz (Service for my Zigbee network)
-- Mosquitto (MQTT broker)
 - Home assistant (My home automation server of choice)
 - Visual Studio Code Server (easy editing of configs)
-- Node-Red (automation programming / will be removed soon)
 - AppDaemon (automation programming <- this is amazing)
-- todomini (Self-hosted todo list app / mainly for groceries)
-- hass-configurator (simple home assistant configuration tool)
-- Authelia (self-hosted authenication server: for selfhosted todo)
 
 This is a description meant to help me, but it might be useful for you too. Feel free to contact me on
 [LinkedIn](https://linkedin.com/in/dennisbakhuis).
@@ -73,8 +68,6 @@ mkdir -p ~/docker/pihole/pihole
 mkdir -p ~/docker/vscode/storage
 mkdir -p ~/docker/pihole/dns-masq.d/
 mkdir -p ~/docker/traefik2/acme
-mkdir -p ~/docker/todomini/dennis
-mkdir -p ~/docker/todomini/kim
 touch ~/docker/traefik2/acme/acme.json
 
 ```
@@ -95,5 +88,3 @@ docker-compose up -d
 docker-compose up --force-recreate --build -d
 docker image prune -f
 
-## Authelia
-Authelia has secrets stored in /secrets that are required. Examples are stored in /examples/

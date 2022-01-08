@@ -161,6 +161,7 @@ services:
       - '2080:2080'
       - '5090:5090'
       - '2081:2081'
+      - '6080:6080'
     volumes:
       - $DOCKERDIR/deconz:/opt/deCONZ
       - /etc/localtime:/etc/localtime:ro
@@ -178,6 +179,7 @@ services:
       - DECONZ_VNC_MODE=1
       - DECONZ_VNC_PORT=5900
       - DECONZ_VNC_PASSWORD=$VNCPASSWORD
+      - DECONZ_NOVNC_PORT=6080
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.deconz-rtr.entrypoints=https"
@@ -204,6 +206,27 @@ services:
   #   ports:
   #     - "1883:1883"
   #     - "9001:9001"
+
+
+  #############
+  ## zwavejs ##
+  #############
+  zwavejs:
+    container_name: zwavejs
+    image: zwavejs/zwavejs2mqtt:latest
+    volumes:
+      - $DOCKERDIR/zwavejs:/usr/src/app/store
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    ports:
+      - '8091:8091'
+      - '3000:3000'
+    devices:
+      - /dev/ttyACM0  # Z-wave
+    environment:
+      - TZ=Europe/Amsterdam
 
 
   ####################
