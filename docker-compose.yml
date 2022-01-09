@@ -387,6 +387,9 @@ services:
     environment:
       - HOMESERVER_ADDITIONAL_PIP_PACKAGES=pandas==1.3.5 webdav4==0.9.3
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=$POSTGRESQL_CONNECTION_STRING
+      - AIRFLOW__CORE__DAGS_FOLDER=/home/home_server/airflow/dags
+      - BAKHUIS_DATALAKE=$BAKHUIS_DATALAKE
+      - BAKHUIS_INFLUXDB_TOKEN=$BAKHUIS_INFLUXDB_TOKEN
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.airflow-rtr.entrypoints=https"
