@@ -366,3 +366,30 @@ services:
       - "traefik.http.routers.linkding-rtr.service=linkding-svc"
       - "traefik.http.routers.linkding-rtr.middlewares=chain-no-auth@file"
       - "traefik.http.services.linkding-svc.loadbalancer.server.port=9090"
+
+
+  ####################
+  ## airflow_docker ##
+  ####################
+  airflow:
+    image: dennisbakhuis/airflow_docker:latest
+    container_name: airflow
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    ports:
+      - "8080:8080"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - $DOCKERDIR/airflow:/home/home_server/airflow
+    user: "$PUID:$PGID"
+    environment:
+      - HOMESERVER_ADDITIONAL_PIP_PACKAGES=pandas==1.3.5 webdav4==0.9.3
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=$POSTGRESQL_CONNECTION_STRING
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.airflow-rtr.entrypoints=https"
+      - "traefik.http.routers.airflow-rtr.rule=Host(`airflow.$DOMAINNAME`)"
+      - "traefik.http.routers.airflow-rtr.service=airflow-svc"
+      - "traefik.http.routers.airflow-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.services.airflow-svc.loadbalancer.server.port=8080"

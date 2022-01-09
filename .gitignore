@@ -58,3 +58,5 @@ vscode/
 *.log*
 
 zwavejs/
+
+airflow/
