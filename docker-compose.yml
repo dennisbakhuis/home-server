@@ -259,32 +259,29 @@ services:
 ########################
   vscode:
     container_name: vscode
-    image: codercom/code-server:latest
+    image: lscr.io/linuxserver/code-server
     ports:
-      - "8443:8080"
+      - "8443:8443"
     networks:
       - t2_proxy
     restart: unless-stopped
-    depends_on:
-      - pihole
     volumes:
-      - $USERDIR:/home/coder/project
-      - $DOCKERDIR/vscode/storage:/home/coder/.local/share/code-server
-    command: code-server --auth password --disable-telemetry /home/coder/project
-    user: "$PUID:$PGID"
+      - $DOCKERDIR:/bakhuis
+      - $DOCKERDIR/vscode:/config
     environment:
       - PUID=$PUID
       - PGID=$PGID
-      - PASSWORD=$VSCPASSWORD
-      - PROXY_DOMAIN=$VSC_DOMAIN
       - TZ=$TZ
+      - DEFAULT_WORKSPACE=/bakhuis
+      # - PASSWORD=$VSCPASSWORD
+      - PROXY_DOMAIN=$VSC_DOMAIN
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.visualstudiocode-rtr.entrypoints=https"
       - "traefik.http.routers.visualstudiocode-rtr.rule=Host(`visualstudiocode.$DOMAINNAME`)"
       - "traefik.http.routers.visualstudiocode-rtr.middlewares=chain-white-list@file"
       - "traefik.http.routers.visualstudiocode-rtr.service=visualstudiocode-svc"
-      - "traefik.http.services.visualstudiocode-svc.loadbalancer.server.port=8080"
+      - "traefik.http.services.visualstudiocode-svc.loadbalancer.server.port=8443"
 
 
 ###############
@@ -394,6 +391,77 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.airflow-rtr.entrypoints=https"
       - "traefik.http.routers.airflow-rtr.rule=Host(`airflow.$DOMAINNAME`)"
-      - "traefik.http.routers.airflow-rtr.service=airflow-svc"
       - "traefik.http.routers.airflow-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.routers.airflow-rtr.service=airflow-svc"
       - "traefik.http.services.airflow-svc.loadbalancer.server.port=8080"
+
+
+  ###############
+  ## wireguard ##
+  ###############
+  # wireguard:
+  #   image: linuxserver/wireguard:latest
+  #   container_name: wireguard
+  #   restart: unless-stopped
+  #   cap_add:
+  #     - NET_ADMIN
+  #     - SYS_MODULE
+  #   networks:
+  #     - t2_proxy
+  #   ports:
+  #     - "51820:51820"
+  #   volumes:
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - $DOCKERDIR/wireguard:/config
+  #     - /lib/modules:/lib/modules
+  #   user: "1000:1000"
+  #   environment:
+  #     - PUID=$PUID
+  #     - PGID=$PGID
+  #     - TZ=Europe/Amsterdam
+  #     - SERVERURL=wireguard.bakhuis.nu
+  #     - SERVERPORT=51820
+  #     # - PEERS=1
+  #     # - PEERDNS=auto
+  #     # - ALLOWEDIPS=0.0.0.0/0
+  #     - BAKHUIS_INFLUXDB_TOKEN=$BAKHUIS_INFLUXDB_TOKEN
+  #   sysctls:
+  #     - net.ipv4.conf.all.src_valid_mark=1
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.wireguard-rtr.entrypoints=https"
+  #     - "traefik.http.routers.wireguard-rtr.rule=Host(`wireguard.$DOMAINNAME`)"
+  #     - "traefik.http.routers.wireguard-rtr.service=wireguard-svc"
+  #     - "traefik.http.routers.wireguard-rtr.middlewares=chain-no-auth@file"
+  #     - "traefik.http.services.wireguard-svc.loadbalancer.server.port=8080"
+
+
+
+  ##############
+  ## heimdall ##
+  ##############
+  heimdall:
+    image: lscr.io/linuxserver/heimdall
+    container_name: heimdall
+    networks:
+      - t2_proxy
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - TZ=Europe/Amsterdam
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - $DOCKERDIR/heimdall:/config
+    ports:
+      - 1080:80
+      - 1443:443
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.heimdall-rtr.entrypoints=https"
+      - "traefik.http.routers.heimdall-rtr.rule=Host(`heimdall.$DOMAINNAME`)"
+      - "traefik.http.routers.heimdall-rtr.service=heimdall-svc"
+      - "traefik.http.routers.heimdall-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.services.heimdall-svc.loadbalancer.server.port=80"
+
+

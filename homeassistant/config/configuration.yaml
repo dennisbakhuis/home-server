@@ -17,11 +17,17 @@ homeassistant:
 default_config:
 
 
-# panel_iframe:
-#   configurator:
-#     title: Configurator
-#     icon: mdi:wrench
-#     url: !secret configurator_url
+alarm_control_panel:
+  - platform: manual
+    name: Bakhuis alarm
+    arming_time: 30
+    delay_time: 0
+    trigger_time: 120
+    disarmed:
+      trigger_time: 0
+    armed_home:
+      arming_time: 0
+      delay_time: 0
 
 
 http:
@@ -72,6 +78,7 @@ scene: !include scenes.yaml
 sensor: !include_dir_merge_list sensors/
 
 
+# Data collection
 influxdb:
   api_version: 2
   ssl: false
@@ -87,6 +94,18 @@ influxdb:
       - sensor.br_temperature
 
 
+apache_kafka:
+  ip_address: !secret kafka_broker_url
+  port: !secret kafka_broker_port
+  topic: !secret kafka_topic
+  filter:
+    include_entities:
+      - sensor.energy_consumption_totals
+      - sensor.gas_consumption
+      - sensor.br_temperature
+
+
+# Custom UI
 input_select:
   kitchen_lower_dimlevel:
     name: Keuken laag dimstand
@@ -124,14 +143,10 @@ input_boolean:
     initial: on
     icon: 'mdi:lightbulb'
 
+  alarm_silent_mode:
+    name: Alarm stille modus
+    initial: off
+    icon: 'mdi:bullhorn'
+
 
 wake_on_lan:
-
-
-webostv:
-  host: !secret webostv_ip
-  name: LG Television
-  turn_on_action:
-    service: wake_on_lan.send_magic_packet
-    data:
-      mac: !secret webostv_mac

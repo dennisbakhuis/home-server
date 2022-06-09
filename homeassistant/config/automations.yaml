@@ -64,3 +64,17 @@
     entity_id: light.woonkamer
     domain: light
   mode: single
+- id: '1647348176219'
+  alias: LGTV_On
+  description: Turn on LG TV using Wake on Lan
+  trigger:
+  - platform: device
+    device_id: 6838d71aa15a21305a3676a8cb2ffe58
+    domain: webostv
+    type: webostv.turn_on
+  condition: []
+  action:
+  - service: wake_on_lan.send_magic_packet
+    data:
+      mac: B4:B2:91:CF:A3:1E
+  mode: single
