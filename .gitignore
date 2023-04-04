@@ -51,6 +51,7 @@ shared/.htpasswd
 traefik2/acme/acme.json
 traefik2/rules/middleware.yml
 traefik2/rules/static-routes.yml
+traefik2/logs/
 
 # vscode
 vscode/
@@ -66,3 +67,5 @@ wireguard/
 heimdall/
 
 wordpress_voorvoet/
+
+

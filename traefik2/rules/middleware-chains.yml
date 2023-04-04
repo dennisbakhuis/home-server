@@ -1,6 +1,10 @@
 
 http:
   middlewares:
+    chain-no-auth-allports:
+      chain:
+        middlewares:
+          - middlewares-rate-limit
     chain-no-auth:
       chain:
         middlewares:
