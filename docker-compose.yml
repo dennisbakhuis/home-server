@@ -469,7 +469,7 @@ services:
   #######################
   # Wordpress voorvoet ##
   #######################
-  wordpress_voorvoet:
+  voorvoet_import_tool:
     image: dennisbakhuis/voorvoet_eboekhouden_app:latest
     container_name: voorvoet_eboekhouden
     networks:
