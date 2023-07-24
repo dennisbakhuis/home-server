@@ -2,15 +2,15 @@ listen_serre:
   alias: Spotify serre
   sequence:
   - service: media_player.turn_on
-    entity_id: media_player.denon_avr_zone2
-  - delay: 00:00:01
+    entity_id: media_player.home_theater_2
+  - delay: 00:00:05
   - service: media_player.select_source
-    entity_id: media_player.denon_avr_zone2
+    entity_id: media_player.home_theater_2
     data_template:
       source: HEOS Music
-  - delay: 00:00:01
+  - delay: 00:00:02
   - service: media_player.volume_set
-    entity_id: media_player.denon_avr_zone2
+    entity_id: media_player.home_theater_2
     data_template:
       volume_level: 0.3
 media_off_serre:
@@ -18,82 +18,83 @@ media_off_serre:
   sequence:
   - service: media_player.turn_off
     data:
-      entity_id: media_player.denon_avr_zone2
+      entity_id: media_player.home_theater_2
 listen_woonkamer:
   alias: Spotify woonkamer
   sequence:
   - service: media_player.turn_on
-    entity_id: media_player.denon_avr
-  - delay: 00:00:02
+    entity_id: media_player.home_theater
+  - delay: 00:00:05
   - service: media_player.select_source
-    entity_id: media_player.denon_avr
+    entity_id: media_player.home_theater
     data_template:
       source: HEOS Music
-  - delay: 00:00:01
+  - delay: 00:00:02
   - service: media_player.turn_off
     entity_id: media_player.lg_television
   - service: switch.turn_off
     entity_id: switch.plug_2_xbox
   - service: switch.turn_off
     entity_id: switch.plug_1_subwoover
-  - delay: 00:00:01
   - service: media_player.volume_set
-    entity_id: media_player.denon_avr
+    entity_id: media_player.home_theater
     data_template:
       volume_level: 0.3
 watch_cast:
   alias: Cast kijken
   sequence:
   - service: media_player.turn_on
-    entity_id: media_player.denon_avr
+    entity_id: media_player.home_theater
+  - service: switch.turn_on
+    entity_id: switch.plug_2_xbox
   - service: media_player.turn_on
     entity_id: media_player.lg_television
-  - delay: 00:00:02
+  - delay: 00:00:03
   - service: media_player.select_source
-    entity_id: media_player.denon_avr
+    entity_id: media_player.home_theater
     data_template:
-      source: Chromecast
+      source: Cast
   - service: media_player.select_source
     entity_id: media_player.lg_television
     data_template:
-      source: AVR-X2700H
-  - service: switch.turn_off
-    entity_id: switch.plug_2_xbox
+      source: HDMI 2
   - service: switch.turn_on
     entity_id: switch.plug_1_subwoover
   - delay: 00:00:02
   - service: media_player.volume_set
-    entity_id: media_player.denon_avr
+    entity_id: media_player.home_theater
     data_template:
       volume_level: 0.55
 play_xbox:
   alias: Gamen
   sequence:
   - service: media_player.turn_on
-    entity_id: media_player.denon_avr
+    entity_id: media_player.home_theater
   - service: media_player.turn_on
     entity_id: media_player.lg_television
-  - delay: 00:00:02
+  - delay: 00:00:04
   - service: media_player.select_source
-    entity_id: media_player.denon_avr
+    entity_id: media_player.home_theater
     data_template:
       source: Xbox
   - service: media_player.select_source
     entity_id: media_player.lg_television
     data_template:
-      source: AVR-X2700H
-  - delay: 00:00:01
+      source: HDMI 2
+  - delay: 00:00:02
   - service: media_player.volume_set
-    entity_id: media_player.denon_avr
+    entity_id: media_player.home_theater
     data_template:
       volume_level: 0.45
   - service: switch.turn_on
     entity_id: switch.plug_1_subwoover
+  - service: switch.turn_off
+    entity_id: switch.plug_2_xbox
 media_off:
   alias: Alle media uit
   sequence:
   - service: media_player.turn_off
-    entity_id: media_player.denon_avr
+    entity_id: media_player.home_theater
   - service: media_player.turn_off
     entity_id: media_player.lg_television
   - service: switch.turn_off
@@ -115,50 +116,50 @@ receiver_mute_toggle:
   sequence:
   - service: media_player.volume_mute
     data_template:
-      entity_id: media_player.denon_avr
-      is_volume_muted: '{%- if states.media_player.denon_avr.attributes.is_volume_muted
+      entity_id: media_player.home_theater
+      is_volume_muted: '{%- if states.media_player.home_theater.attributes.is_volume_muted
         == false -%} true {%- else -%} false {%- endif -%}'
 receiver_mute_toggle_zone2:
   sequence:
   - service: media_player.volume_mute
     data_template:
-      entity_id: media_player.denon_avr_zone2
-      is_volume_muted: '{%- if states.media_player.denon_avr_zone2.attributes.is_volume_muted
+      entity_id: media_player.media_player.home_theater_2
+      is_volume_muted: '{%- if states.media_player.home_theater_2.attributes.is_volume_muted
         == false -%} true {%- else -%} false {%- endif -%}'
-netflix_kijken:
-  alias: Netflix kijken
-  sequence:
-  - service: media_player.turn_on
-    entity_id: media_player.denon_avr
-  - service: media_player.turn_on
-    entity_id: media_player.lg_television
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 4
-      milliseconds: 0
-  - service: media_player.select_source
-    target:
-      entity_id: media_player.lg_television
-    data:
-      source: Netflix
-  - service: media_player.select_source
-    target:
-      entity_id: media_player.denon_avr
-    data:
-      source: ' TV Audio'
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 2
-      milliseconds: 0
-  - service: media_player.volume_set
-    target:
-      entity_id: media_player.denon_avr
-    data:
-      volume_level: 0.55
-  - service: switch.turn_on
-    target:
-      entity_id: switch.plug_1_subwoover
-  mode: single
-  icon: mdi:netflix
+# netflix_kijken:
+#   alias: Netflix kijken
+#   sequence:
+#   - service: media_player.turn_on
+#     entity_id: media_player.denon_avr
+#   - service: media_player.turn_on
+#     entity_id: media_player.lg_television
+#   - delay:
+#       hours: 0
+#       minutes: 0
+#       seconds: 4
+#       milliseconds: 0
+#   - service: media_player.select_source
+#     target:
+#       entity_id: media_player.lg_television
+#     data:
+#       source: Netflix
+#   - service: media_player.select_source
+#     target:
+#       entity_id: media_player.denon_avr
+#     data:
+#       source: ' TV Audio'
+#   - delay:
+#       hours: 0
+#       minutes: 0
+#       seconds: 2
+#       milliseconds: 0
+#   - service: media_player.volume_set
+#     target:
+#       entity_id: media_player.denon_avr
+#     data:
+#       volume_level: 0.55
+#   - service: switch.turn_on
+#     target:
+#       entity_id: switch.plug_1_subwoover
+#   mode: single
+#   icon: mdi:netflix
