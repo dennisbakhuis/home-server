@@ -199,10 +199,11 @@ services:
     container_name: mosquitto
     network_mode: host
     restart: unless-stopped
-    # volumes:  # not using persistence
-    #   - $DOCKERDIR/mosquitto/config:/mosquitto/config
-    #   - $DOCKERDIR/mosquitto/data:/mosquitto/data
-    #   - $DOCKERDIR/mosquitto/log:/mosquitto/log
+    volumes:  # not using persistence
+      - $DOCKERDIR/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - $DOCKERDIR/secrets/mosquitto.passwd:/mosquitto/config/mosquitto.passwd
+      # - $DOCKERDIR/mosquitto/data:/mosquitto/data
+      # - $DOCKERDIR/mosquitto/log:/mosquitto/log
     # ports:
     #   - "1883:1883"
     #   - "9001:9001"
