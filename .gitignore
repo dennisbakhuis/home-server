@@ -72,3 +72,9 @@ zookeeper/
 
 kafka_ui/
 
+ssh_honeypot/
+
+kafka_0/
+kafka_1/
+kafka_2/
+

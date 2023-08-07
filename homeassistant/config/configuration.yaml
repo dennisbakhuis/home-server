@@ -2,12 +2,6 @@
 # Author: Dennis Bakhuis
 # Date  : 2023-07-14
 homeassistant:
-  # name: !secret homeassistantname
-  # latitude: !secret latitude
-  # longitude: !secret longitude
-  # elevation: !secret elevation
-  # unit_system: !secret unit_system
-  # time_zone: !secret time_zone
   auth_mfa_modules:
     - type: notify
       include:
@@ -92,17 +86,16 @@ influxdb:
       - sensor.energy_consumption_totals
       - sensor.gas_consumption
       - sensor.br_temperature
+      - sensor.power_production
 
 
-# apache_kafka:
-#   ip_address: !secret kafka_broker_url
-#   port: !secret kafka_broker_port
-#   topic: !secret kafka_topic
-#   filter:
-#     include_entities:
-#       - sensor.energy_consumption_totals
-#       - sensor.gas_consumption
-#       - sensor.br_temperature
+apache_kafka:
+  ip_address: !secret kafka_broker_url
+  port: !secret kafka_broker_port
+  topic: !secret kafka_topic
+  filter:
+    include_entities:
+      - sensor.power_production
 
 
 # Custom UI

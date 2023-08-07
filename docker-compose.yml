@@ -518,6 +518,33 @@ services:
   # kafka #
   #########
   # Only run internally
+  kafka-0:
+    container_name: kafka-0
+    image: docker.io/bitnami/kafka:latest
+    hostname: kafka-0
+    networks:
+      - kafka-network
+    ports:
+      - 9092:9092
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - $DOCKERDIR/kafka_0:/bitnami/kafka
+    environment:
+      - TZ=Europe/Amsterdam
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_BROKER_ID=0
+      - KAFKA_KRAFT_CLUSTER_ID=YjQyOTI4NjY1NjlmNDAzMG
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_KRAFT_REPLICATION_FACTOR=3
+      - KAFKA_CFG_LISTENERS=INTERNAL://kafka-0:29092,CONTROLLER://kafka-0:29093,EXTERNAL://0.0.0.0:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-0:29092,EXTERNAL://$SERVERIP:9092
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka-0:29093,1@kafka-1:29093,2@kafka-2:29093
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
   kafka-1:
     container_name: kafka-1
     image: docker.io/bitnami/kafka:latest
@@ -525,29 +552,26 @@ services:
     networks:
       - kafka-network
     ports:
-      - 9092:9092
       - 9093:9093
-      - 9094:9094
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - $DOCKERDIR/kafka:/bitnami/kafka_1
+      - $DOCKERDIR/kafka_1:/bitnami/kafka
     environment:
       - TZ=Europe/Amsterdam
       - ALLOW_ANONYMOUS_LOGIN=yes
       - KAFKA_ENABLE_KRAFT=yes
       - KAFKA_CFG_PROCESS_ROLES=broker,controller
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=kraft:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
       - KAFKA_CFG_NODE_ID=1
       - KAFKA_CFG_BROKER_ID=1
       - KAFKA_KRAFT_CLUSTER_ID=YjQyOTI4NjY1NjlmNDAzMG
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9094,2@kafka-2:9094,3@kafka-3:9094
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_KRAFT_REPLICATION_FACTOR=3
-      - KAFKA_CFG_ADVERTISED_LISTENERS=kraft://:9093,INTERNAL://kafka-1:9092
-      - KAFKA_CFG_LISTENERS=kraft://:9093,CONTROLLER://kafka-1:9094,INTERNAL://:9092
+      - KAFKA_CFG_LISTENERS=INTERNAL://kafka-1:29092,CONTROLLER://kafka-1:29093,EXTERNAL://0.0.0.0:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-1:29092,EXTERNAL://$SERVERIP:9093
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka-0:29093,1@kafka-1:29093,2@kafka-2:29093
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
-      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=3
   kafka-2:
     container_name: kafka-2
     image: docker.io/bitnami/kafka:latest
@@ -555,59 +579,26 @@ services:
     networks:
       - kafka-network
     ports:
-      - 9095:9092
-      - 9096:9093
-      - 9097:9094
+      - 9094:9094
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - $DOCKERDIR/kafka:/bitnami/kafka_2
+      - $DOCKERDIR/kafka_2:/bitnami/kafka
     environment:
       - TZ=Europe/Amsterdam
       - ALLOW_ANONYMOUS_LOGIN=yes
       - KAFKA_ENABLE_KRAFT=yes
       - KAFKA_CFG_PROCESS_ROLES=broker,controller
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=kraft:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
       - KAFKA_CFG_NODE_ID=2
       - KAFKA_CFG_BROKER_ID=2
       - KAFKA_KRAFT_CLUSTER_ID=YjQyOTI4NjY1NjlmNDAzMG
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=2@kafka-2:9094,1@kafka-1:9094,3@kafka-3:9094
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_KRAFT_REPLICATION_FACTOR=3
-      - KAFKA_CFG_ADVERTISED_LISTENERS=kraft://:9093,INTERNAL://kafka-2:9092
-      - KAFKA_CFG_LISTENERS=kraft://:9093,CONTROLLER://kafka-2:9094,INTERNAL://:9092
+      - KAFKA_CFG_LISTENERS=INTERNAL://kafka-2:29092,CONTROLLER://kafka-2:29093,EXTERNAL://0.0.0.0:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-2:29092,EXTERNAL://$SERVERIP:9094
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka-0:29093,1@kafka-1:29093,2@kafka-2:29093
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
-      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=3
-  kafka-3:
-    container_name: kafka-3
-    image: docker.io/bitnami/kafka:latest
-    hostname: kafka-3
-    networks:
-      - kafka-network
-    ports:
-      - 9098:9092
-      - 9099:9093
-      - 9100:9094
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - $DOCKERDIR/kafka:/bitnami/kafka_3
-    environment:
-      - TZ=Europe/Amsterdam
-      - ALLOW_ANONYMOUS_LOGIN=yes
-      - KAFKA_ENABLE_KRAFT=yes
-      - KAFKA_CFG_PROCESS_ROLES=broker,controller
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=kraft:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT
-      - KAFKA_CFG_NODE_ID=3
-      - KAFKA_CFG_BROKER_ID=3
-      - KAFKA_KRAFT_CLUSTER_ID=YjQyOTI4NjY1NjlmNDAzMG
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=3@kafka-3:9094,1@kafka-1:9094,2@kafka-2:9094
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_KRAFT_REPLICATION_FACTOR=3
-      - KAFKA_CFG_ADVERTISED_LISTENERS=kraft://:9093,INTERNAL://kafka-3:9092
-      - KAFKA_CFG_LISTENERS=kraft://:9093,CONTROLLER://kafka-3:9094,INTERNAL://:9092
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
-      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=3
   kafka-ui:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
