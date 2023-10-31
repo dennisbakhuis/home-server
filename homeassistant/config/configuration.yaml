@@ -57,19 +57,12 @@ notify:
       - service: telegram_kim
 
 
-group: !include groups.yaml
-
-
-automation: !include automations.yaml
-
-
+# group: !include groups.yaml
+# scene: !include scenes.yaml
+# sensor: !include_dir_merge_list sensors/
 script: !include scripts.yaml
-
-
-scene: !include scenes.yaml
-
-
-sensor: !include_dir_merge_list sensors/
+automation: !include automations.yaml
+template: !include templates.yaml
 
 
 # Data collection
@@ -89,13 +82,13 @@ influxdb:
       - sensor.power_production
 
 
-apache_kafka:
-  ip_address: !secret kafka_broker_url
-  port: !secret kafka_broker_port
-  topic: !secret kafka_topic
-  filter:
-    include_entities:
-      - sensor.power_production
+# apache_kafka:
+#   ip_address: !secret kafka_broker_url
+#   port: !secret kafka_broker_port
+#   topic: !secret kafka_topic
+#   filter:
+#     include_entities:
+#       - sensor.power_production
 
 
 # Custom UI
@@ -116,30 +109,14 @@ input_select:
       - Geel
     initial: Wit
 
-  eettafel_dimlevel:
-    name: Eettafel dimstand
-    options:
-      - Dimstand 1
-      - Dimstand 2
-      - Dimstand 3
-    initial: Dimstand 1
-
-
 input_boolean:
   automatic_light_kitchen:
     name: Automatisch licht keuken
     initial: on
     icon: 'mdi:lightbulb'
-
-  automatic_light_hal:
-    name: Automatisch licht hal
-    initial: on
-    icon: 'mdi:lightbulb'
-
   alarm_silent_mode:
     name: Alarm stille modus
     initial: off
     icon: 'mdi:bullhorn'
-
 
 wake_on_lan:

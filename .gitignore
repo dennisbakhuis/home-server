@@ -41,7 +41,7 @@ homeassistant/config/ip_bans.yaml
 homeassistant/config/trusted_proxies.yaml
 
 # node-red (Will be removed soon)
-node-red/
+node_red/
 
 # pihole
 pihole/
@@ -78,5 +78,4 @@ kafka_0/
 kafka_1/
 kafka_2/
 
-baikal/
 radicale/

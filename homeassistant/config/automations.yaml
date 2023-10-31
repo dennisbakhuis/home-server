@@ -1,69 +1,3 @@
-- id: automatisch_licht_hal
-  alias: Automatisch licht hal
-  description: Licht gaat automatisch aan bij beweging
-  trigger:
-  - entity_id: binary_sensor.pir_a_gang
-    platform: state
-    to: 'on'
-  condition:
-  - condition: or
-    conditions:
-    - before: sunrise
-      before_offset: 01:00:00
-      condition: sun
-    - after: sunset
-      after_offset: -01:00:00
-      condition: sun
-  action:
-  - service: switch.turn_on
-    target:
-      entity_id: switch.licht_hal
-  initial_state: true
-  mode: single
-- id: hal_licht_uit
-  alias: Automatisch licht hal uit
-  trigger:
-  - entity_id: binary_sensor.pir_a_gang
-    for: 0:00:60
-    from: 'on'
-    platform: state
-    to: 'off'
-  condition:
-  - condition: state
-    entity_id: automation.automatisch_licht_hal
-    state: 'on'
-  action:
-  - service: switch.turn_off
-    target:
-      entity_id: switch.licht_hal
-  initial_state: true
-  mode: single
-- id: '1636567897700'
-  alias: Toggle eettafellicht
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: switch.eettafel_midden
-  condition: []
-  action:
-  - type: toggle
-    device_id: 1427c6e833e04472a42615368ba9a279
-    entity_id: light.eettafel
-    domain: light
-  mode: single
-- id: '1636567992900'
-  alias: Toggle woonkamerlicht
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: switch.eettafel_rechts
-  condition: []
-  action:
-  - type: toggle
-    device_id: d187b4e934c61bfc5d68fcc81ff4fac5
-    entity_id: light.woonkamer
-    domain: light
-  mode: single
 - id: '1647348176219'
   alias: LGTV_On
   description: Turn on LG TV using Wake on Lan
@@ -77,4 +11,129 @@
   - service: wake_on_lan.send_magic_packet
     data:
       mac: B4:B2:91:CF:A3:1E
+  mode: single
+- id: '1694182946587'
+  alias: hall light automation
+  description: Automatically turn on/off light in hall with timer.
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.pir_a_gang
+    from: 'off'
+    to: 'on'
+    id: motion_detected
+  - platform: state
+    entity_id:
+    - binary_sensor.pir_a_gang
+    from: 'on'
+    to: 'off'
+    id: motion_clear
+  - platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.timer_licht_hal
+    id: timer_finished
+  - platform: state
+    entity_id:
+    - binary_sensor.licht_hal_input
+    from: 'on'
+    to: 'off'
+    id: button_pressed
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - motion_detected
+      - condition: numeric_state
+        entity_id: sensor.rfhdckk0a4_pv_all_power
+        below: 150
+      - condition: state
+        entity_id: input_boolean.automatisch_licht_hal
+        state: 'on'
+      sequence:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.licht_hal
+      - service: timer.cancel
+        target:
+          entity_id: timer.timer_licht_hal
+        data: {}
+    - conditions:
+      - condition: trigger
+        id:
+        - motion_clear
+      - condition: state
+        entity_id: input_boolean.automatisch_licht_hal
+        state: 'on'
+      - condition: state
+        entity_id: switch.licht_hal
+        state: 'on'
+      sequence:
+      - service: timer.start
+        data:
+          duration: '{{ states(''input_number.tijd_licht_hal'') }}'
+        target:
+          entity_id: timer.timer_licht_hal
+    - conditions:
+      - condition: trigger
+        id:
+        - timer_finished
+      - condition: state
+        entity_id: input_boolean.automatisch_licht_hal
+        state: 'on'
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.licht_hal
+    - conditions:
+      - condition: trigger
+        id:
+        - button_pressed
+      - condition: state
+        entity_id: switch.licht_hal
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.automatisch_licht_hal
+        state: 'on'
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.automatic_light_hal
+    - conditions:
+      - condition: trigger
+        id:
+        - button_pressed
+      - condition: state
+        entity_id: switch.licht_hal
+        state: 'off'
+      sequence:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.licht_hal
+    - conditions:
+      - condition: trigger
+        id:
+        - button_pressed
+      - condition: state
+        entity_id: input_boolean.automatisch_licht_hal
+        state: 'off'
+      - condition: state
+        entity_id: switch.licht_hal
+        state: 'on'
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.automatic_light_hal
+      - service: timer.start
+        data:
+          duration: '{{ states(''input_number.tijd_licht_hal'') }}'
+        target:
+          entity_id: timer.timer_licht_hal
   mode: single

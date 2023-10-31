@@ -1,3 +1,0 @@
-- platform: illuminance
-  name: Estimated Illuminance
-  entity_id: weather.bakhuishuis

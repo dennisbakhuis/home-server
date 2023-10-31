@@ -33,7 +33,7 @@ multi_switch_kitchen:
   switch_right: switch.shelly_keuken_rechts
   motion_sensors:
     - binary_sensor.pir_b_keuken
-  illuminance_sensor: sensor.estimated_illuminance
+  solar_power_sensor: sensor.power_production
   light_group: light.keuken
   auto_light_toggle: input_boolean.automatic_light_kitchen
   relax_input_select: input_select.kitchen_lower_dimlevel
@@ -47,7 +47,7 @@ multi_switch_kitchen:
     Geel: scene.keuken_work_yellow
     Wit: scene.keuken_work_white
   light_duration: 120
-  illumination_threshold: 2200
+  solar_power_sensor_threshold: 1
   log_level: DEBUG
 
 

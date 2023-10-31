@@ -10,8 +10,8 @@ networks:
       name: t2_proxy
   # default:
   #   driver: bridge
-  kafka-network:
-    driver: bridge
+  # kafka-network:
+  #   driver: bridge
 
 ##############
 ## services ##
@@ -227,7 +227,7 @@ services:
     devices:
       - /dev/ttyACM0  # Z-wave
     environment:
-      - TZ=Europe/Amsterdam
+      - TZ=$TZ
 
 
   ####################
@@ -315,6 +315,55 @@ services:
       - "traefik.http.services.appdaemon-svc.loadbalancer.server.port=80"
 
 
+  ##############
+  ## node-red ##
+  ##############
+  node-red:
+    container_name: node-red
+    image: nodered/node-red:latest
+    volumes:
+      - $DOCKERDIR/node_red:/data
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    ports:
+      - '1880:1880'
+    environment:
+      - TZ=$TZ
+      - PUID=$PUID
+      - PGID=$PGID
+    user: "$PUID:$PGID"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nodered-rtr.entrypoints=https"
+      - "traefik.http.routers.nodered-rtr.rule=Host(`nodered.$DOMAINNAME`)"
+      - "traefik.http.routers.nodered-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.routers.nodered-rtr.service=nodered-svc"
+      - "traefik.http.services.nodered-svc.loadbalancer.server.port=1880"
+
+
+  ###############################
+  ## growatt monitoring: grott ##
+  ###############################
+  grott:
+    image: ledidobe/grott:latest
+    container_name: grott
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      - TZ=$TZ
+      - ginvtype=tl3
+      - gmqttip=$SERVERIP
+      - gmqttauth=True
+      - gmqttuser=$MQTT_USER
+      - gmqttpassword=$MQTT_PASSWORD
+      - gpvoutput=True
+      - gpvapikey=$PVORG_API_KEY
+      - gpvsystemid=$PVORG_SYSTEM_ID
+      - gblockcmd=True
+
+
   #######################
   ## hass-configurator ##
   #######################
@@ -345,25 +394,25 @@ services:
   ##############
   # https://github.com/sissbruecker/linkding
   # create user: docker-compose exec linkding python manage.py createsuperuser --username=joe --email=joe@example.com
-  linkding:
-    image: sissbruecker/linkding:latest
-    container_name: linkding
-    restart: unless-stopped
-    networks:
-      - t2_proxy
-    ports:
-      - "9090:9090"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - $DOCKERDIR/linkding:/etc/linkding/data
-    user: "$PUID:$PGID"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.linkding-rtr.entrypoints=https"
-      - "traefik.http.routers.linkding-rtr.rule=Host(`linkding.$DOMAINNAME`)"
-      - "traefik.http.routers.linkding-rtr.service=linkding-svc"
-      - "traefik.http.routers.linkding-rtr.middlewares=chain-no-auth@file"
-      - "traefik.http.services.linkding-svc.loadbalancer.server.port=9090"
+  # linkding:
+  #   image: sissbruecker/linkding:latest
+  #   container_name: linkding
+  #   restart: unless-stopped
+  #   networks:
+  #     - t2_proxy
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - $DOCKERDIR/linkding:/etc/linkding/data
+  #   user: "$PUID:$PGID"
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.linkding-rtr.entrypoints=https"
+  #     - "traefik.http.routers.linkding-rtr.rule=Host(`linkding.$DOMAINNAME`)"
+  #     - "traefik.http.routers.linkding-rtr.service=linkding-svc"
+  #     - "traefik.http.routers.linkding-rtr.middlewares=chain-no-auth@file"
+  #     - "traefik.http.services.linkding-svc.loadbalancer.server.port=9090"
 
 
   ####################
@@ -419,7 +468,7 @@ services:
   #   environment:
   #     - PUID=$PUID
   #     - PGID=$PGID
-  #     - TZ=Europe/Amsterdam
+  #     - TZ=$TZ
   #     - SERVERURL=wireguard.bakhuis.nu
   #     - SERVERPORT=51820
   #     # - PEERS=1
@@ -449,7 +498,7 @@ services:
     environment:
       - PUID=$PUID
       - PGID=$PGID
-      - TZ=Europe/Amsterdam
+      - TZ=$TZ
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - $DOCKERDIR/heimdall:/config
@@ -465,25 +514,27 @@ services:
       - "traefik.http.routers.heimdall-rtr.middlewares=chain-white-list@file"
       - "traefik.http.services.heimdall-svc.loadbalancer.server.port=80"
 
+
   #######################
   # SSH Honeypot Server #
   #######################
-  ssh-honeypot:
-    image: dennisbakhuis/ssh-honeypot:latest
-    container_name: ssh-honeypot
-    networks:
-      - t2_proxy
-    environment:
-      - PUID=$PUID
-      - PGID=$PGID
-      - TZ=Europe/Amsterdam
-      - HONEYPOT_IP_INFO_API_TOKEN=$HONEYPOT_IP_INFO_API_TOKEN
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - $DOCKERDIR/ssh_honeypot/:/data/
-    ports:
-      - 2222:2222
-    restart: unless-stopped
+  # ssh-honeypot:
+  #   image: dennisbakhuis/ssh-honeypot:latest
+  #   container_name: ssh-honeypot
+  #   networks:
+  #     - t2_proxy
+  #   environment:
+  #     - PUID=$PUID
+  #     - PGID=$PGID
+  #     - TZ=$TZ
+  #     - HONEYPOT_IP_INFO_API_TOKEN=$HONEYPOT_IP_INFO_API_TOKEN
+  #   volumes:
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - $DOCKERDIR/ssh_honeypot/:/data/
+  #   ports:
+  #     - 2222:2222
+  #   restart: unless-stopped
+
 
   ############################
   # Voorvoet_importeer_tool ##
@@ -496,7 +547,7 @@ services:
     environment:
       - PUID=$PUID
       - PGID=$PGID
-      - TZ=Europe/Amsterdam
+      - TZ=$TZ
       - EBOEKHOUDEN_USERNAME=$EBOEKHOUDEN_USERNAME
       - EBOEKHOUDEN_CODE1=$EBOEKHOUDEN_CODE1
       - EBOEKHOUDEN_CODE2=$EBOEKHOUDEN_CODE2
@@ -513,30 +564,10 @@ services:
       - "traefik.http.routers.eboekhouden-rtr.middlewares=chain-white-list@file"
       - "traefik.http.services.eboekhouden-svc.loadbalancer.server.port=80"
 
-  # baikal:
-  #   container_name: baikal
-  #   image: ckulka/baikal:nginx
-  #   networks:
-  #     - t2_proxy
-  #   environment:
-  #     - PUID=$PUID
-  #     - PGID=$PGID
-  #     - TZ=Europe/Amsterdam
-  #   volumes:
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - $DOCKERDIR/baikal/config:/var/www/baikal/config
-  #     - $DOCKERDIR/baikal/data:/var/www/baikal/Specific
-  #   ports:
-  #     - 1082:80
-  #   restart: unless-stopped
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.baikal-rtr.entrypoints=https"
-  #     - "traefik.http.routers.baikal-rtr.rule=Host(`carddav.$DOMAINNAME`)"
-  #     - "traefik.http.routers.baikal-rtr.service=baikal-svc"
-  #     - "traefik.http.routers.baikal-rtr.middlewares=chain-no-auth@file"
-  #     - "traefik.http.services.baikal-svc.loadbalancer.server.port=80"
 
+  ############
+  # radicale #
+  ############
   radicale:
     image: tomsquest/docker-radicale
     container_name: radicale
@@ -545,7 +576,7 @@ services:
     environment:
       - PUID=$PUID
       - PGID=$PGID
-      - TZ=Europe/Amsterdam
+      - TZ=$TZ
     ports:
       - 5232:5232
     init: true
@@ -576,104 +607,4 @@ services:
       - "traefik.http.routers.radicale-rtr.service=radicale-svc"
       - "traefik.http.routers.radicale-rtr.middlewares=chain-no-auth@file"
       - "traefik.http.services.radicale-svc.loadbalancer.server.port=5232"
-
-
-  #########
-  # kafka #
-  #########
-  # Only run internally
-  kafka-0:
-    container_name: kafka-0
-    image: docker.io/bitnami/kafka:latest
-    hostname: kafka-0
-    networks:
-      - kafka-network
-    ports:
-      - 9092:9092
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - $DOCKERDIR/kafka_0:/bitnami/kafka
-    environment:
-      - TZ=Europe/Amsterdam
-      - ALLOW_ANONYMOUS_LOGIN=yes
-      - KAFKA_ENABLE_KRAFT=yes
-      - KAFKA_CFG_PROCESS_ROLES=broker,controller
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_NODE_ID=0
-      - KAFKA_CFG_BROKER_ID=0
-      - KAFKA_KRAFT_CLUSTER_ID=YjQyOTI4NjY1NjlmNDAzMG
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_KRAFT_REPLICATION_FACTOR=3
-      - KAFKA_CFG_LISTENERS=INTERNAL://kafka-0:29092,CONTROLLER://kafka-0:29093,EXTERNAL://0.0.0.0:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-0:29092,EXTERNAL://$SERVERIP:9092
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka-0:29093,1@kafka-1:29093,2@kafka-2:29093
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
-  kafka-1:
-    container_name: kafka-1
-    image: docker.io/bitnami/kafka:latest
-    hostname: kafka-1
-    networks:
-      - kafka-network
-    ports:
-      - 9093:9093
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - $DOCKERDIR/kafka_1:/bitnami/kafka
-    environment:
-      - TZ=Europe/Amsterdam
-      - ALLOW_ANONYMOUS_LOGIN=yes
-      - KAFKA_ENABLE_KRAFT=yes
-      - KAFKA_CFG_PROCESS_ROLES=broker,controller
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_NODE_ID=1
-      - KAFKA_CFG_BROKER_ID=1
-      - KAFKA_KRAFT_CLUSTER_ID=YjQyOTI4NjY1NjlmNDAzMG
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_KRAFT_REPLICATION_FACTOR=3
-      - KAFKA_CFG_LISTENERS=INTERNAL://kafka-1:29092,CONTROLLER://kafka-1:29093,EXTERNAL://0.0.0.0:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-1:29092,EXTERNAL://$SERVERIP:9093
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka-0:29093,1@kafka-1:29093,2@kafka-2:29093
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
-  kafka-2:
-    container_name: kafka-2
-    image: docker.io/bitnami/kafka:latest
-    hostname: kafka-2
-    networks:
-      - kafka-network
-    ports:
-      - 9094:9094
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - $DOCKERDIR/kafka_2:/bitnami/kafka
-    environment:
-      - TZ=Europe/Amsterdam
-      - ALLOW_ANONYMOUS_LOGIN=yes
-      - KAFKA_ENABLE_KRAFT=yes
-      - KAFKA_CFG_PROCESS_ROLES=broker,controller
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_NODE_ID=2
-      - KAFKA_CFG_BROKER_ID=2
-      - KAFKA_KRAFT_CLUSTER_ID=YjQyOTI4NjY1NjlmNDAzMG
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_KRAFT_REPLICATION_FACTOR=3
-      - KAFKA_CFG_LISTENERS=INTERNAL://kafka-2:29092,CONTROLLER://kafka-2:29093,EXTERNAL://0.0.0.0:9094
-      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-2:29092,EXTERNAL://$SERVERIP:9094
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka-0:29093,1@kafka-1:29093,2@kafka-2:29093
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
-  kafka-ui:
-    container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
-    user: "$PUID:$PGID"
-    networks:
-      - kafka-network
-    ports:
-      - 6001:8080
-    environment:
-      - DYNAMIC_CONFIG_ENABLED=true
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - $DOCKERDIR/kafka_ui:/etc/kafkaui
 

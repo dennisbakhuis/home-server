@@ -30,7 +30,7 @@
 #     - scene.keuken_work_yellow
 #     - scene.keuken_work_white
 #   light_duration: 120
-#   illumination_threshold: 2000
+#   solar_power_sensor_threshold: 1
 #   log_level: DEBUG
 ##################################################
 # Author: Dennis Bakhuis
@@ -39,7 +39,7 @@
 import hassapi as hass
 
 class KitchenLightSwitcher(hass.Hass):
-    VERSION = '0.1.1'
+    VERSION = '0.2.0'
 
     def initialize(self):
         self.set_namespace('hass')
@@ -48,7 +48,7 @@ class KitchenLightSwitcher(hass.Hass):
         self.switch_left = self.args['switch_left']
         self.switch_right = self.args['switch_right']
         self.motion_sensors = self.args['motion_sensors']
-        self.illuminance_sensor = self.args['illuminance_sensor']
+        self.solar_power_sensor = self.args['solar_power_sensor']
 
         # Physical light
         self.light_group = self.args['light_group']
@@ -62,7 +62,7 @@ class KitchenLightSwitcher(hass.Hass):
         self.work_scenes = self.args['work_scenes']
         self.relax_scenes = self.args['relax_scenes']
         self.light_duration = int(self.args.get('light_duration', 120))
-        self.illumination_threshold = int(self.args.get('illumination_threshold', 500))
+        self.solar_power_sensor_threshold = int(self.args.get('solar_power_sensor_threshold', 500))
 
         # Set light-timer to None
         self.lights_timer = None
@@ -126,16 +126,16 @@ class KitchenLightSwitcher(hass.Hass):
         return self._check_state(self.auto_light_toggle)
 
     
-    def low_illumminance(self):
+    def low_power(self):
         """
-        Check if lumminance below threshold
+        Check if power_production is below threshold
         """
-        illumminance = int(self.get_state(self.illuminance_sensor))
+        power = float(self.get_state(self.solar_power_sensor))
         self.log(
-            f"Illuminance is : {illumminance}", 
+            f"Power is : {power}", 
             level="DEBUG",
         )
-        if illumminance < self.illumination_threshold:
+        if power <= self.solar_power_sensor_threshold:
             return True
         return False
 
@@ -145,10 +145,10 @@ class KitchenLightSwitcher(hass.Hass):
         Set new scene
         """
         scene_key = self.get_state(input_select)
-        self.log(
-            f"Setting new scene: {scene_key}", 
-            level="DEBUG",
-        )
+        # self.log(
+        #     f"Setting new scene: {scene_key}", 
+        #     level="DEBUG",
+        # )
         scene = scenes[scene_key]
         self.turn_on(scene)
 
@@ -217,7 +217,7 @@ class KitchenLightSwitcher(hass.Hass):
         if self.automatic_light_on():
             self.log("Automatic light is on.", level="DEBUG",)
             if new == 'on':
-                if self.low_illumminance():
+                if self.low_power():
                     self.log("It is dark enough to turn on lights.", level="DEBUG",)
                     self.cancel_lights_timer()
                     self.set_scene(self.work_input_select, self.work_scenes)
