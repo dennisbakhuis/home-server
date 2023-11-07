@@ -46,12 +46,17 @@
       - condition: trigger
         id:
         - motion_detected
-      - condition: numeric_state
-        entity_id: sensor.rfhdckk0a4_pv_all_power
-        below: 150
       - condition: state
         entity_id: input_boolean.automatisch_licht_hal
         state: 'on'
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: sensor.rfhdckk0a4_pv_all_power
+          state: unavailable
+        - condition: numeric_state
+          entity_id: sensor.rfhdckk0a4_pv_all_power
+          below: 150
       sequence:
       - service: switch.turn_on
         data: {}

@@ -364,6 +364,31 @@ services:
       - gblockcmd=True
 
 
+  ################################
+  ## boards: our_shopping_list ###
+  ################################
+  boards:
+    image: nanawel/our-shopping-list:latest
+    container_name: boards
+    networks:
+      - t2_proxy
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - TZ=$TZ
+      - MONGODB_HOST=$SHOPPING_LIST_DB_IP
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.boards-rtr.entrypoints=https"
+      - "traefik.http.routers.boards-rtr.rule=Host(`boards.$DOMAINNAME`)"
+      - "traefik.http.routers.boards-rtr.service=boards-svc"
+      - "traefik.http.routers.boards-rtr.middlewares=chain-basic-auth@file"
+      - "traefik.http.services.boards-svc.loadbalancer.server.port=8080"
+
+
   #######################
   ## hass-configurator ##
   #######################
@@ -568,43 +593,43 @@ services:
   ############
   # radicale #
   ############
-  radicale:
-    image: tomsquest/docker-radicale
-    container_name: radicale
-    networks:
-      - t2_proxy
-    environment:
-      - PUID=$PUID
-      - PGID=$PGID
-      - TZ=$TZ
-    ports:
-      - 5232:5232
-    init: true
-    read_only: true
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - SETUID
-      - SETGID
-      - CHOWN
-      - KILL
-    healthcheck:
-      test: curl -f http://$SERVERIP:5232 || exit 1
-      interval: 30s
-      retries: 3
-    restart: unless-stopped
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - $DOCKERDIR/radicale/data:/data
-      - $DOCKERDIR/radicale/config:/config:ro
-      - $DOCKERDIR/secrets/radicale.passwd:/radicale.passwd
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.radicale-rtr.entrypoints=https"
-      - "traefik.http.routers.radicale-rtr.rule=Host(`carddav.$DOMAINNAME`)"
-      - "traefik.http.routers.radicale-rtr.service=radicale-svc"
-      - "traefik.http.routers.radicale-rtr.middlewares=chain-no-auth@file"
-      - "traefik.http.services.radicale-svc.loadbalancer.server.port=5232"
+  # radicale:
+  #   image: tomsquest/docker-radicale
+  #   container_name: radicale
+  #   networks:
+  #     - t2_proxy
+  #   environment:
+  #     - PUID=$PUID
+  #     - PGID=$PGID
+  #     - TZ=$TZ
+  #   ports:
+  #     - 5232:5232
+  #   init: true
+  #   read_only: true
+  #   security_opt:
+  #     - no-new-privileges:true
+  #   cap_drop:
+  #     - ALL
+  #   cap_add:
+  #     - SETUID
+  #     - SETGID
+  #     - CHOWN
+  #     - KILL
+  #   healthcheck:
+  #     test: curl -f http://$SERVERIP:5232 || exit 1
+  #     interval: 30s
+  #     retries: 3
+  #   restart: unless-stopped
+  #   volumes:
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - $DOCKERDIR/radicale/data:/data
+  #     - $DOCKERDIR/radicale/config:/config:ro
+  #     - $DOCKERDIR/secrets/radicale.passwd:/radicale.passwd
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.radicale-rtr.entrypoints=https"
+  #     - "traefik.http.routers.radicale-rtr.rule=Host(`carddav.$DOMAINNAME`)"
+  #     - "traefik.http.routers.radicale-rtr.service=radicale-svc"
+  #     - "traefik.http.routers.radicale-rtr.middlewares=chain-no-auth@file"
+  #     - "traefik.http.services.radicale-svc.loadbalancer.server.port=5232"
 
