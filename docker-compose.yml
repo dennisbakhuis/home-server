@@ -24,7 +24,7 @@ services:
   #############
   traefik:
     container_name: traefik
-    image: traefik:v2.9.8
+    image: traefik:v2.11.0
     restart: unless-stopped
     command:
       - --global.checkNewVersion=true
@@ -112,41 +112,41 @@ services:
       - "traefik.http.routers.traefik-rtr.middlewares=chain-white-list@file"
 
 
-  #############
-  ## pi-hole ##
-  #############
-  pihole:
-    container_name: pihole
-    domainname: docker
-    hostname: pihole
-    image: pihole/pihole:latest
-    ports:
-      - '53:53/tcp'
-      - '53:53/udp'
-      - '8182:80'
-      - '8183:443'
-    restart: unless-stopped
-    depends_on:
-      - traefik
-    volumes:
-      - $DOCKERDIR/pihole/pihole:/etc/pihole
-      - $DOCKERDIR/pihole/dnsmasq.d:/etc/dnsmasq.d
-    networks:
-      - t2_proxy
-    environment:
-      - VIRTUAL_HOST=pihole.$DOMAINNAME
-      - VIRTUAL_PORT=80
-      - TZ=$TZ
-      - WEBPASSWORD=$PIHOLEWEBPASSWORD
-      - DNS1=$PIHOLE_LOCAL_DNS
-      - DNS2=$PIHOLE_UPSTREAM_DNS
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pihole-rtr.entrypoints=https"
-      - "traefik.http.routers.pihole-rtr.rule=Host(`pihole.$DOMAINNAME`)"
-      - "traefik.http.routers.pihole-rtr.middlewares=chain-white-list@file"
-      - "traefik.http.routers.pihole-rtr.service=pihole-svc"
-      - "traefik.http.services.pihole-svc.loadbalancer.server.port=80"
+  ##############
+  ### pi-hole ##
+  ##############
+  #pihole:
+  #  container_name: pihole
+  #  domainname: docker
+  #  hostname: pihole
+  #  image: pihole/pihole:latest
+  #  ports:
+  #    - '53:53/tcp'
+  #    - '53:53/udp'
+  #    - '8182:80'
+  #    - '8183:443'
+  #  restart: unless-stopped
+  #  # depends_on:
+  #  #   - traefik
+  #  volumes:
+  #    - $DOCKERDIR/pihole/pihole:/etc/pihole
+  #    - $DOCKERDIR/pihole/dnsmasq.d:/etc/dnsmasq.d
+  #  networks:
+  #    - t2_proxy
+  #  environment:
+  #    - VIRTUAL_HOST=pihole.$DOMAINNAME
+  #    - VIRTUAL_PORT=80
+  #    - TZ=$TZ
+  #    - WEBPASSWORD=$PIHOLEWEBPASSWORD
+  #    - DNS1=$PIHOLE_LOCAL_DNS
+  #    - DNS2=$PIHOLE_UPSTREAM_DNS
+  #  labels:
+  #    - "traefik.enable=true"
+  #    - "traefik.http.routers.pihole-rtr.entrypoints=https"
+  #    - "traefik.http.routers.pihole-rtr.rule=Host(`pihole.$DOMAINNAME`)"
+  #    - "traefik.http.routers.pihole-rtr.middlewares=chain-white-list@file"
+  #    - "traefik.http.routers.pihole-rtr.service=pihole-svc"
+  #    - "traefik.http.services.pihole-svc.loadbalancer.server.port=80"
 
 
   ############
@@ -156,8 +156,6 @@ services:
     image: deconzcommunity/deconz:latest
     container_name: deconz
     restart: unless-stopped
-    depends_on:
-      - pihole
     networks:
       - t2_proxy
     ports:
@@ -203,11 +201,8 @@ services:
     volumes:  # not using persistence
       - $DOCKERDIR/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
       - $DOCKERDIR/secrets/mosquitto.passwd:/mosquitto/config/mosquitto.passwd
-      # - $DOCKERDIR/mosquitto/data:/mosquitto/data
-      # - $DOCKERDIR/mosquitto/log:/mosquitto/log
-    # ports:
-    #   - "1883:1883"
-    #   - "9001:9001"
+      - /etc/localtime:/etc/localtime:ro
+
 
   #############
   ## zwavejs ##
@@ -249,7 +244,7 @@ services:
       - /dev/ttyUSB0  # DSMR
       - /dev/ttyACM0  # Z-wave
     depends_on:
-      - pihole
+      # - pihole
       - deconz
     labels:
       - "traefik.enable=false"
