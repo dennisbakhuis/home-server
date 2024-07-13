@@ -13,6 +13,15 @@ networks:
   # kafka-network:
   #   driver: bridge
 
+
+#############
+## Volumes ##
+#############
+volumes:
+  teslamate-grafana-data:
+  teslamate-app-data:
+
+
 ##############
 ## services ##
 ##############
@@ -24,7 +33,7 @@ services:
   #############
   traefik:
     container_name: traefik
-    image: traefik:v2.11.0
+    image: traefik:v2.11.2
     restart: unless-stopped
     command:
       - --global.checkNewVersion=true
@@ -204,25 +213,25 @@ services:
       - /etc/localtime:/etc/localtime:ro
 
 
-  #############
-  ## zwavejs ##
-  #############
-  zwavejs:
-    container_name: zwavejs
-    image: zwavejs/zwavejs2mqtt:latest
-    volumes:
-      - $DOCKERDIR/zwavejs:/usr/src/app/store
-      - /etc/localtime:/etc/localtime:ro
-    restart: unless-stopped
-    networks:
-      - t2_proxy
-    ports:
-      - '8091:8091'
-      - '3000:3000'
-    devices:
-      - /dev/ttyACM0  # Z-wave
-    environment:
-      - TZ=$TZ
+  ##############
+  ### zwavejs ##
+  ##############
+  #zwavejs:
+  #  container_name: zwavejs
+  #  image: zwavejs/zwavejs2mqtt:latest
+  #  volumes:
+  #    - $DOCKERDIR/zwavejs:/usr/src/app/store
+  #    - /etc/localtime:/etc/localtime:ro
+  #  restart: unless-stopped
+  #  networks:
+  #    - t2_proxy
+  #  ports:
+  #    - '8091:8091'
+  #    - '3000:3000'
+  #  devices:
+  #    - /dev/ttyACM0  # Z-wave
+  #  environment:
+  #    - TZ=$TZ
 
 
   ####################
@@ -359,154 +368,6 @@ services:
       - gblockcmd=True
 
 
-  ################################
-  ## boards: our_shopping_list ###
-  ################################
-  boards:
-    image: nanawel/our-shopping-list:latest
-    container_name: boards
-    networks:
-      - t2_proxy
-    environment:
-      - PUID=$PUID
-      - PGID=$PGID
-      - TZ=$TZ
-      - MONGODB_HOST=$SHOPPING_LIST_DB_IP
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.boards-rtr.entrypoints=https"
-      - "traefik.http.routers.boards-rtr.rule=Host(`boards.$DOMAINNAME`)"
-      - "traefik.http.routers.boards-rtr.service=boards-svc"
-      - "traefik.http.routers.boards-rtr.middlewares=chain-basic-auth@file"
-      - "traefik.http.services.boards-svc.loadbalancer.server.port=8080"
-
-
-  #######################
-  ## hass-configurator ##
-  #######################
-  # hass-configurator:
-  #   container_name: hassconfigurator
-  #   image: causticlab/hass-configurator-docker:x86_64
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3218:3218"
-  #   networks:
-  #     - t2_proxy
-  #   volumes:
-  #     - $DOCKERDIR/hass-configurator:/config
-  #     - $DOCKERDIR/homeassistant/config:/hass-config
-  #     - $DOCKERDIR/secrets.yaml:/hass-config/secrets.yaml
-  #   user: "$PUID:$PGID"
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.hassconfig-rtr.entrypoints=https"
-  #     - "traefik.http.routers.hassconfig-rtr.rule=Host(`hassconfig.$DOMAINNAME`)"
-  #     - "traefik.http.routers.hassconfig-rtr.service=hassconfig-svc"
-  #     - "traefik.http.routers.hassconfig-rtr.middlewares=chain-white-list@file"
-  #     - "traefik.http.services.hassconfig-svc.loadbalancer.server.port=3218"
-
-
-  ##############
-  ## linkding ##
-  ##############
-  # https://github.com/sissbruecker/linkding
-  # create user: docker-compose exec linkding python manage.py createsuperuser --username=joe --email=joe@example.com
-  # linkding:
-  #   image: sissbruecker/linkding:latest
-  #   container_name: linkding
-  #   restart: unless-stopped
-  #   networks:
-  #     - t2_proxy
-  #   ports:
-  #     - "9090:9090"
-  #   volumes:
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - $DOCKERDIR/linkding:/etc/linkding/data
-  #   user: "$PUID:$PGID"
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.linkding-rtr.entrypoints=https"
-  #     - "traefik.http.routers.linkding-rtr.rule=Host(`linkding.$DOMAINNAME`)"
-  #     - "traefik.http.routers.linkding-rtr.service=linkding-svc"
-  #     - "traefik.http.routers.linkding-rtr.middlewares=chain-no-auth@file"
-  #     - "traefik.http.services.linkding-svc.loadbalancer.server.port=9090"
-
-
-  ####################
-  ## airflow_docker ##
-  ####################
-  # airflow:
-  #   image: dennisbakhuis/airflow_docker:latest
-  #   container_name: airflow
-  #   restart: unless-stopped
-  #   networks:
-  #     - t2_proxy
-  #   ports:
-  #     - "8080:8080"
-  #   volumes:
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - $DOCKERDIR/airflow:/home/home_server/airflow
-  #     - $DOCKERDIR/airflow_dags:/home/home_server/airflow/dags
-  #   user: "$PUID:$PGID"
-  #   environment:
-  #     - HOMESERVER_ADDITIONAL_PIP_PACKAGES=pandas==1.3.5 webdav4==0.9.3
-  #     - AIRFLOW__CORE__SQL_ALCHEMY_CONN=$POSTGRESQL_CONNECTION_STRING
-  #     - AIRFLOW__CORE__DAGS_FOLDER=/home/home_server/airflow/dags
-  #     - BAKHUIS_DATALAKE=$BAKHUIS_DATALAKE
-  #     - BAKHUIS_INFLUXDB_TOKEN=$BAKHUIS_INFLUXDB_TOKEN
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.airflow-rtr.entrypoints=https"
-  #     - "traefik.http.routers.airflow-rtr.rule=Host(`airflow.$DOMAINNAME`)"
-  #     - "traefik.http.routers.airflow-rtr.middlewares=chain-white-list@file"
-  #     - "traefik.http.routers.airflow-rtr.service=airflow-svc"
-  #     - "traefik.http.services.airflow-svc.loadbalancer.server.port=8080"
-
-
-  ###############
-  ## wireguard ##
-  ###############
-  # wireguard:
-  #   image: linuxserver/wireguard:latest
-  #   container_name: wireguard
-  #   restart: unless-stopped
-  #   cap_add:
-  #     - NET_ADMIN
-  #     - SYS_MODULE
-  #   networks:
-  #     - t2_proxy
-  #   ports:
-  #     - "51820:51820"
-  #   volumes:
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - $DOCKERDIR/wireguard:/config
-  #     - /lib/modules:/lib/modules
-  #   user: "1000:1000"
-  #   environment:
-  #     - PUID=$PUID
-  #     - PGID=$PGID
-  #     - TZ=$TZ
-  #     - SERVERURL=wireguard.bakhuis.nu
-  #     - SERVERPORT=51820
-  #     # - PEERS=1
-  #     # - PEERDNS=auto
-  #     # - ALLOWEDIPS=0.0.0.0/0
-  #     - BAKHUIS_INFLUXDB_TOKEN=$BAKHUIS_INFLUXDB_TOKEN
-  #   sysctls:
-  #     - net.ipv4.conf.all.src_valid_mark=1
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.wireguard-rtr.entrypoints=https"
-  #     - "traefik.http.routers.wireguard-rtr.rule=Host(`wireguard.$DOMAINNAME`)"
-  #     - "traefik.http.routers.wireguard-rtr.service=wireguard-svc"
-  #     - "traefik.http.routers.wireguard-rtr.middlewares=chain-no-auth@file"
-  #     - "traefik.http.services.wireguard-svc.loadbalancer.server.port=8080"
-
-
-
   ##############
   ## heimdall ##
   ##############
@@ -533,27 +394,6 @@ services:
       - "traefik.http.routers.heimdall-rtr.service=heimdall-svc"
       - "traefik.http.routers.heimdall-rtr.middlewares=chain-white-list@file"
       - "traefik.http.services.heimdall-svc.loadbalancer.server.port=80"
-
-
-  #######################
-  # SSH Honeypot Server #
-  #######################
-  # ssh-honeypot:
-  #   image: dennisbakhuis/ssh-honeypot:latest
-  #   container_name: ssh-honeypot
-  #   networks:
-  #     - t2_proxy
-  #   environment:
-  #     - PUID=$PUID
-  #     - PGID=$PGID
-  #     - TZ=$TZ
-  #     - HONEYPOT_IP_INFO_API_TOKEN=$HONEYPOT_IP_INFO_API_TOKEN
-  #   volumes:
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - $DOCKERDIR/ssh_honeypot/:/data/
-  #   ports:
-  #     - 2222:2222
-  #   restart: unless-stopped
 
 
   ############################
@@ -585,46 +425,63 @@ services:
       - "traefik.http.services.eboekhouden-svc.loadbalancer.server.port=80"
 
 
-  ############
-  # radicale #
-  ############
-  # radicale:
-  #   image: tomsquest/docker-radicale
-  #   container_name: radicale
-  #   networks:
-  #     - t2_proxy
-  #   environment:
-  #     - PUID=$PUID
-  #     - PGID=$PGID
-  #     - TZ=$TZ
-  #   ports:
-  #     - 5232:5232
-  #   init: true
-  #   read_only: true
-  #   security_opt:
-  #     - no-new-privileges:true
-  #   cap_drop:
-  #     - ALL
-  #   cap_add:
-  #     - SETUID
-  #     - SETGID
-  #     - CHOWN
-  #     - KILL
-  #   healthcheck:
-  #     test: curl -f http://$SERVERIP:5232 || exit 1
-  #     interval: 30s
-  #     retries: 3
-  #   restart: unless-stopped
-  #   volumes:
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - $DOCKERDIR/radicale/data:/data
-  #     - $DOCKERDIR/radicale/config:/config:ro
-  #     - $DOCKERDIR/secrets/radicale.passwd:/radicale.passwd
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.radicale-rtr.entrypoints=https"
-  #     - "traefik.http.routers.radicale-rtr.rule=Host(`carddav.$DOMAINNAME`)"
-  #     - "traefik.http.routers.radicale-rtr.service=radicale-svc"
-  #     - "traefik.http.routers.radicale-rtr.middlewares=chain-no-auth@file"
-  #     - "traefik.http.services.radicale-svc.loadbalancer.server.port=5232"
+  ################
+  ## Tesla Mate ##
+  ################
+  tesla_grafana:
+    image: teslamate/grafana:latest
+    container_name: tesla_grafana
+    networks:
+      - t2_proxy
+    environment:
+      - TZ=$TZ
+      - DATABASE_USER=$TESLA_DATABASE_USERNAME
+      - DATABASE_PASS=$TESLA_DATABASE_PASSWORD
+      - DATABASE_NAME=$TESLA_DATABASE_NAME
+      - DATABASE_HOST=$TESLA_DATABASE_HOST
+      - DATABASE_PORT=$TESLA_DATABASE_PORT
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - teslamate-grafana-data:/var/lib/grafana
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tesla-grafana-rtr.entrypoints=https"
+      - "traefik.http.routers.tesla-grafana-rtr.rule=Host(`tesla.$DOMAINNAME`)"
+      - "traefik.http.routers.tesla-grafana-rtr.service=tesla-grafana-svc"
+      - "traefik.http.routers.tesla-grafana-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.services.tesla-grafana-svc.loadbalancer.server.port=3000"
 
+  teslamate:
+    image: teslamate/teslamate:latest
+    container_name: teslamate
+    networks:
+      - t2_proxy
+    environment:
+      - TZ=$TZ
+      - ENCRYPTION_KEY=$TESLA_ENCRYPTION_KEY
+      - DATABASE_USER=$TESLA_DATABASE_USERNAME
+      - DATABASE_PASS=$TESLA_DATABASE_PASSWORD
+      - DATABASE_NAME=$TESLA_DATABASE_NAME
+      - DATABASE_HOST=$TESLA_DATABASE_HOST
+      - DATABASE_PORT=$TESLA_DATABASE_PORT
+      - MQTT_HOST=$SERVERIP
+      - MQTT_USERNAME=$MQTT_USER
+      - MQTT_PASSWORD=$MQTT_PASSWORD
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - teslamate-app-data:/opt/app/import
+    ports:
+      - 4000:4000
+    cap_drop:
+      - all
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.teslamate-rtr.entrypoints=https"
+      - "traefik.http.routers.teslamate-rtr.rule=Host(`teslamate.$DOMAINNAME`)"
+      - "traefik.http.routers.teslamate-rtr.service=teslamate-svc"
+      - "traefik.http.routers.teslamate-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.services.teslamate-svc.loadbalancer.server.port=4000"
