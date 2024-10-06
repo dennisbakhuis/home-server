@@ -1,81 +1,81 @@
 # Light will follow other lights
-boekenkast_slave_light:
-  module: bookshelf_slave_light
-  class: Bookshelf_Slave_Light
+# boekenkast_slave_light:
+#   module: bookshelf_slave_light
+#   class: Bookshelf_Slave_Light
 
 
 # Lights dim or reset according to TV on/off
-dim_lights_tv_on:
-  module: dim_lights_on_entity
-  class: Dim_Lights_On_Entity
-  entity: media_player.lg_television
-  lights:
-    - light.woonkamer
-  dim_levels:
-    - 102
+# dim_lights_tv_on:
+#   module: dim_lights_on_entity
+#   class: Dim_Lights_On_Entity
+#   entity: media_player.lg_television
+#   lights:
+#     - light.woonkamer
+#   dim_levels:
+#     - 102
 
 
 # Message when doorbell ding dongs
-doorbell_notifier:
-  module: doorbell_notifier
-  class: DoorbellNotifier
-  doorbell_sensor: binary_sensor.deurbel
-  notify_service: everybody
-  title: Doorbell notifier
-  message: Ding dong!
+# doorbell_notifier:
+#   module: doorbell_notifier
+#   class: DoorbellNotifier
+#   doorbell_sensor: binary_sensor.deurbel
+#   notify_service: everybody
+#   title: Doorbell notifier
+#   message: Ding dong!
 
 
 # New kitchen switch protocol
-multi_switch_kitchen:
-  module: kitchen_light_switcher
-  class: KitchenLightSwitcher
-  switch_left: switch.shelly_keuken_links
-  switch_right: switch.shelly_keuken_rechts
-  motion_sensors:
-    - binary_sensor.pir_b_keuken
-  solar_power_sensor: sensor.power_production
-  light_group: light.keuken
-  auto_light_toggle: input_boolean.automatic_light_kitchen
-  relax_input_select: input_select.kitchen_lower_dimlevel
-  work_input_select: input_select.kitchen_higher_dimlevel
-  relax_scenes:
-    Uit: scene.keuken_relax_off
-    Twee: scene.keuken_relax_two
-    Drie: scene.keuken_relax_three
-    Alles: scene.keuken_relax_all
-  work_scenes:
-    Geel: scene.keuken_work_yellow
-    Wit: scene.keuken_work_white
-  light_duration: 120
-  solar_power_sensor_threshold: 1
-  log_level: DEBUG
+# multi_switch_kitchen:
+#   module: kitchen_light_switcher
+#   class: KitchenLightSwitcher
+#   switch_left: switch.shelly_keuken_links
+#   switch_right: switch.shelly_keuken_rechts
+#   motion_sensors:
+#     - binary_sensor.pir_b_keuken
+#   solar_power_sensor: sensor.power_production
+#   light_group: light.keuken
+#   auto_light_toggle: input_boolean.automatic_light_kitchen
+#   relax_input_select: input_select.kitchen_lower_dimlevel
+#   work_input_select: input_select.kitchen_higher_dimlevel
+#   relax_scenes:
+#     Uit: scene.keuken_relax_off
+#     Twee: scene.keuken_relax_two
+#     Drie: scene.keuken_relax_three
+#     Alles: scene.keuken_relax_all
+#   work_scenes:
+#     Geel: scene.keuken_work_yellow
+#     Wit: scene.keuken_work_white
+#   light_duration: 120
+#   solar_power_sensor_threshold: 1
+#   log_level: DEBUG
 
 
 # Alarm system
-simple_alarm_system:
-  module: simple_alarm_system
-  class: SimpleAlarmSystem
-  alarm_panel: alarm_control_panel.bakhuis_alarm
-  motion_sensors:
-    - binary_sensor.pir_b_keuken
-    - binary_sensor.pir_1_serre
-    - binary_sensor.pir_4_slaapkamer
-    - binary_sensor.pir_a_gang
-    - binary_sensor.pir_6_woonkamer
-  motion_sensors_friendly_names:
-    - keuken
-    - serre
-    - slaapkamer
-    - gang
-    - woonkamer
-  motion_sensors_ignore_home: 
-    - binary_sensor.pir_4_slaapkamer
-  motion_sensors_delayed: []
-  delay_time: 40
-  silent_alarm_switch: input_boolean.alarm_silent_mode
-  sirens:
-    - switch.plug_5_alarm_siren_2_serre
-    - switch.plug_6_alarm_siren_1_modem
-    - switch.plug_7_alarm_siren_3
-  notify_services: 
-    - everybody
+# simple_alarm_system:
+#   module: simple_alarm_system
+#   class: SimpleAlarmSystem
+#   alarm_panel: alarm_control_panel.bakhuis_alarm
+#   motion_sensors:
+#     - binary_sensor.pir_b_keuken
+#     - binary_sensor.pir_1_serre
+#     - binary_sensor.pir_4_slaapkamer
+#     - binary_sensor.pir_a_gang
+#     - binary_sensor.pir_6_woonkamer
+#   motion_sensors_friendly_names:
+#     - keuken
+#     - serre
+#     - slaapkamer
+#     - gang
+#     - woonkamer
+#   motion_sensors_ignore_home: 
+#     - binary_sensor.pir_4_slaapkamer
+#   motion_sensors_delayed: []
+#   delay_time: 40
+#   silent_alarm_switch: input_boolean.alarm_silent_mode
+#   sirens:
+#     - switch.plug_5_alarm_siren_2_serre
+#     - switch.plug_6_alarm_siren_1_modem
+#     - switch.plug_7_alarm_siren_3
+#   notify_services: 
+#     - everybody

@@ -1,6 +1,6 @@
 # Home assistant Configuration
 # Author: Dennis Bakhuis
-# Date  : 2023-07-14
+# Date  : 2024-09-16
 homeassistant:
   auth_mfa_modules:
     - type: notify
@@ -9,19 +9,6 @@ homeassistant:
 
 
 default_config:
-
-
-alarm_control_panel:
-  - platform: manual
-    name: Bakhuis alarm
-    arming_time: 30
-    delay_time: 0
-    trigger_time: 120
-    disarmed:
-      trigger_time: 0
-    armed_home:
-      arming_time: 0
-      delay_time: 0
 
 
 http:
@@ -57,12 +44,9 @@ notify:
       - service: telegram_kim
 
 
-# group: !include groups.yaml
-# scene: !include scenes.yaml
-# sensor: !include_dir_merge_list sensors/
 script: !include scripts.yaml
 automation: !include automations.yaml
-template: !include templates.yaml
+scene: !include scenes.yaml
 
 
 # Data collection
@@ -81,42 +65,5 @@ influxdb:
       - sensor.br_temperature
       - sensor.power_production
 
-
-# apache_kafka:
-#   ip_address: !secret kafka_broker_url
-#   port: !secret kafka_broker_port
-#   topic: !secret kafka_topic
-#   filter:
-#     include_entities:
-#       - sensor.power_production
-
-
-# Custom UI
-input_select:
-  kitchen_lower_dimlevel:
-    name: Keuken laag dimstand
-    options:
-      - Uit
-      - Alles
-      - Drie
-      - Twee
-    initial: Uit
-
-  kitchen_higher_dimlevel:
-    name: Keuken hoog dimstand
-    options:
-      - Wit
-      - Geel
-    initial: Wit
-
-input_boolean:
-  automatic_light_kitchen:
-    name: Automatisch licht keuken
-    initial: on
-    icon: 'mdi:lightbulb'
-  alarm_silent_mode:
-    name: Alarm stille modus
-    initial: off
-    icon: 'mdi:bullhorn'
 
 wake_on_lan:

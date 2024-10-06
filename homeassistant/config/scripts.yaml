@@ -121,17 +121,6 @@ media_off:
       entity_id:
       - switch.plug_2_xbox
       - switch.plug_1_subwoover
-sound_alarm:
-  alias: Sound alarm for two minutes
-  sequence:
-  - service: switch.turn_on
-    data:
-      entity_id: switch.neo_coolcam_siren_alarm_switch
-  - delay:
-      seconds: 5
-  - service: switch.turn_off
-    data:
-      entity_id: switch.neo_coolcam_siren_alarm_switch
 turn_on_apple_tv:
   alias: Living Room Apple TV On
   sequence:

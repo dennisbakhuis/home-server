@@ -1,5 +1,5 @@
 - id: '1647348176219'
-  alias: LGTV_On
+  alias: LG tv turned on by wake-on-lan
   description: Turn on LG TV using Wake on Lan
   trigger:
   - platform: device
@@ -8,39 +8,39 @@
     type: webostv.turn_on
   condition: []
   action:
-  - service: wake_on_lan.send_magic_packet
-    data:
+  - data:
       mac: B4:B2:91:CF:A3:1E
+    action: wake_on_lan.send_magic_packet
   mode: single
 - id: '1694182946587'
-  alias: hall light automation
+  alias: hall light
   description: Automatically turn on/off light in hall with timer.
-  trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.pir_a_gang
+  triggers:
+  - entity_id:
+    - binary_sensor.pir_hal_occupancy
     from: 'off'
     to: 'on'
     id: motion_detected
-  - platform: state
-    entity_id:
-    - binary_sensor.pir_a_gang
+    trigger: state
+  - entity_id:
+    - binary_sensor.pir_hal_occupancy
     from: 'on'
     to: 'off'
     id: motion_clear
-  - platform: event
-    event_type: timer.finished
+    trigger: state
+  - event_type: timer.finished
     event_data:
       entity_id: timer.timer_licht_hal
     id: timer_finished
-  - platform: state
-    entity_id:
+    trigger: event
+  - entity_id:
     - binary_sensor.licht_hal_input
     from: 'on'
     to: 'off'
     id: button_pressed
-  condition: []
-  action:
+    trigger: state
+  conditions: []
+  actions:
   - choose:
     - conditions:
       - condition: trigger
@@ -58,14 +58,14 @@
           entity_id: sensor.rfhdckk0a4_pv_all_power
           below: 150
       sequence:
-      - service: switch.turn_on
-        data: {}
+      - data: {}
         target:
           entity_id: switch.licht_hal
-      - service: timer.cancel
-        target:
+        action: switch.turn_on
+      - target:
           entity_id: timer.timer_licht_hal
         data: {}
+        action: timer.cancel
     - conditions:
       - condition: trigger
         id:
@@ -77,11 +77,11 @@
         entity_id: switch.licht_hal
         state: 'on'
       sequence:
-      - service: timer.start
-        data:
+      - data:
           duration: '{{ states(''input_number.tijd_licht_hal'') }}'
         target:
           entity_id: timer.timer_licht_hal
+        action: timer.start
     - conditions:
       - condition: trigger
         id:
@@ -90,10 +90,10 @@
         entity_id: input_boolean.automatisch_licht_hal
         state: 'on'
       sequence:
-      - service: switch.turn_off
-        data: {}
+      - data: {}
         target:
           entity_id: switch.licht_hal
+        action: switch.turn_off
     - conditions:
       - condition: trigger
         id:
@@ -105,10 +105,10 @@
         entity_id: input_boolean.automatisch_licht_hal
         state: 'on'
       sequence:
-      - service: input_boolean.turn_off
-        data: {}
+      - data: {}
         target:
           entity_id: input_boolean.automatic_light_hal
+        action: input_boolean.turn_off
     - conditions:
       - condition: trigger
         id:
@@ -117,10 +117,10 @@
         entity_id: switch.licht_hal
         state: 'off'
       sequence:
-      - service: switch.turn_on
-        data: {}
+      - data: {}
         target:
           entity_id: switch.licht_hal
+        action: switch.turn_on
     - conditions:
       - condition: trigger
         id:
@@ -132,13 +132,294 @@
         entity_id: switch.licht_hal
         state: 'on'
       sequence:
-      - service: input_boolean.turn_on
-        data: {}
+      - data: {}
         target:
           entity_id: input_boolean.automatic_light_hal
-      - service: timer.start
-        data:
+        action: input_boolean.turn_on
+      - data:
           duration: '{{ states(''input_number.tijd_licht_hal'') }}'
         target:
           entity_id: timer.timer_licht_hal
+        action: timer.start
+    - conditions:
+      - condition: trigger
+        id:
+        - motion_detected
+      - condition: state
+        entity_id: timer.timer_licht_hal
+        state: active
+      sequence:
+      - action: timer.cancel
+        metadata: {}
+        data: {}
+        target:
+          entity_id: timer.timer_licht_hal
+  mode: single
+- &id001
+  id: button_pressed
+  alias: Automatisch licht keuken
+  description: Automatically turn on/off light in kitchen with timer.
+  triggers:
+  - entity_id:
+    - binary_sensor.pir_keuken_occupancy
+    from: 'off'
+    to: 'on'
+    id: motion_detected
+    trigger: state
+  - entity_id:
+    - binary_sensor.pir_keuken_occupancy
+    from: 'on'
+    to: 'off'
+    id: motion_clear
+    trigger: state
+  - event_type: timer.finished
+    event_data:
+      entity_id: timer.timer_licht_keuken
+    id: timer_finished
+    trigger: event
+  - device_id: b7e706b053524bee284b421c0987ac70
+    domain: shelly
+    type: single
+    subtype: button
+    id: left_button_short
+    alias: Button left short
+    trigger: device
+  - entity_id:
+    - input_select.licht_keuken_laag
+    id: change_low_state
+    trigger: state
+  - device_id: aa2612844b6a59e4e6c5dae5c4268a4f
+    domain: shelly
+    type: single
+    subtype: button
+    id: right_button_short
+    alias: Button right short
+    trigger: device
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - motion_detected
+      - condition: state
+        entity_id: input_boolean.automatisch_licht_keuken
+        state: 'on'
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: sensor.rfhdckk0a4_pv_all_power
+          state: unavailable
+        - condition: numeric_state
+          entity_id: sensor.rfhdckk0a4_pv_all_power
+          below: 180
+      sequence:
+      - data:
+          entity_id: "{% if states('input_select.licht_keuken_hoog') == 'Geel' %}\n
+            \ scene.keuken_geel\n{% else %}\n  scene.keuken_wit\n{% endif %}\n"
+          transition: 1
+        action: scene.turn_on
+      - target:
+          entity_id: timer.timer_licht_keuken
+        action: timer.cancel
+        data: {}
+    - conditions:
+      - condition: trigger
+        id:
+        - motion_clear
+      - condition: state
+        entity_id: input_boolean.automatisch_licht_keuken
+        state: 'on'
+      - condition: state
+        entity_id: light.texas_instruments_cc2652_keuken_alles
+        state: 'on'
+      sequence:
+      - data:
+          duration: '{{ states(''input_number.tijd_licht_keuken'') }}'
+        target:
+          entity_id: timer.timer_licht_keuken
+        action: timer.start
+    - conditions:
+      - condition: trigger
+        id:
+        - timer_finished
+      - condition: state
+        entity_id: input_boolean.automatisch_licht_keuken
+        state: 'on'
+      sequence:
+      - data:
+          entity_id: "{% if states('input_select.licht_keuken_laag') == 'Falcon' %}\n
+            \ scene.keuken_fornuis\n{% elif states('input_select.licht_keuken_laag')
+            == 'Aanrecht' %}\n  scene.keuken_tuin\n{% elif states('input_select.licht_keuken_laag')
+            == 'Alles' %}\n  scene.keuken_alles\n{% else %}\n  scene.keuken_uit\n{%
+            endif %}\n"
+          transition: 3
+        action: scene.turn_on
+    - conditions:
+      - condition: trigger
+        id:
+        - left_button_short
+      sequence:
+      - action: input_boolean.toggle
+        target:
+          entity_id:
+          - input_boolean.automatisch_licht_keuken
+        data: {}
+      - if:
+        - condition: state
+          entity_id: light.keuken
+          state: 'off'
+        then:
+        - action: scene.turn_on
+          metadata: {}
+          target:
+            entity_id: scene.keuken_work_white
+          data:
+            transition: 1
+    - conditions:
+      - condition: trigger
+        id:
+        - change_low_state
+      sequence:
+      - action: scene.turn_on
+        data:
+          entity_id: "{% if states('input_select.licht_keuken_laag') == 'Falcon' %}\n
+            \ scene.keuken_fornuis\n{% elif states('input_select.licht_keuken_laag')
+            == 'Aanrecht' %}\n  scene.keuken_tuin\n{% elif states('input_select.licht_keuken_laag')
+            == 'Alles' %}\n  scene.keuken_alles\n{% else %}\n  scene.keuken_uit\n{%
+            endif %}\n"
+          transition: 1
+    - conditions:
+      - condition: trigger
+        id:
+        - right_button_short
+      sequence:
+      - action: input_select.select_next
+        metadata: {}
+        data:
+          cycle: true
+        target:
+          entity_id: input_select.licht_keuken_laag
+    - conditions:
+      - condition: trigger
+        id:
+        - motion_detected
+      - condition: state
+        entity_id: timer.timer_licht_keuken
+        state: active
+      sequence:
+      - action: timer.cancel
+        metadata: {}
+        data: {}
+        target:
+          entity_id: timer.timer_licht_keuken
+  mode: single
+- id: '1726494663994'
+  alias: Bookshelf Slave Light
+  description: ''
+  triggers:
+  - entity_id:
+    - light.texas_instruments_cc2652_zithoek
+    trigger: state
+  - entity_id: media_player.lg_television
+    trigger: state
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.texas_instruments_cc2652_zithoek
+        state: 'on'
+      - condition: state
+        entity_id: media_player.lg_television
+        state: 'off'
+      sequence:
+      - target:
+          entity_id: light.boekenkast_light
+        data:
+          brightness: '{{ state_attr(''light.texas_instruments_cc2652_zithoek'', ''brightness'')
+            }}
+
+            '
+        action: light.turn_on
+    - conditions:
+      - condition: state
+        entity_id: light.texas_instruments_cc2652_zithoek
+        state: 'off'
+      sequence:
+      - target:
+          entity_id: light.boekenkast_light
+        action: light.turn_off
+        data: {}
+    - conditions:
+      - condition: state
+        entity_id: media_player.lg_television
+        state: 'on'
+      - condition: state
+        entity_id: light.boekenkast_light
+        state: 'on'
+      sequence:
+      - target:
+          entity_id: light.boekenkast_light
+        action: light.turn_off
+        data: {}
+    - conditions:
+      - condition: state
+        entity_id: media_player.lg_television
+        state: 'off'
+      - condition: state
+        entity_id: light.texas_instruments_cc2652_zithoek
+        state: 'on'
+      sequence:
+      - target:
+          entity_id: light.boekenkast_light
+        data:
+          brightness: '{{ state_attr(''light.texas_instruments_cc2652_zithoek'', ''brightness'')
+            }}
+
+            '
+        action: light.turn_on
+    - conditions:
+      - condition: state
+        entity_id: light.texas_instruments_cc2652_zithoek
+        state: 'on'
+      - condition: template
+        value_template: '{{ trigger.to_state.state == ''on'' and trigger.to_state.attributes.brightness
+          != trigger.from_state.attributes.brightness }}'
+      - condition: state
+        entity_id: media_player.lg_television
+        state: 'off'
+      sequence:
+      - target:
+          entity_id: light.boekenkast_light
+        data:
+          brightness: '{{ state_attr(''light.texas_instruments_cc2652_zithoek'', ''brightness'')
+            }}
+
+            '
+        action: light.turn_on
+- *id001
+- id: '1726513549521'
+  alias: Keuken laag naar uit bij alles uit
+  description: Als alles uit gaat, gaat keuken laag ook naar uit.
+  triggers:
+  - entity_id:
+    - light.texas_instruments_cc2652_zithoek
+    - light.texas_instruments_cc2652_eettafel
+    trigger: state
+    to: 'off'
+  conditions:
+  - condition: state
+    entity_id: light.texas_instruments_cc2652_zithoek
+    state: 'off'
+  - condition: state
+    entity_id: light.texas_instruments_cc2652_eettafel
+    state: 'off'
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    data:
+      option: Uit
+    target:
+      entity_id: input_select.licht_keuken_laag
   mode: single

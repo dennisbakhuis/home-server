@@ -8,10 +8,6 @@ networks:
   t2_proxy:
     external:
       name: t2_proxy
-  # default:
-  #   driver: bridge
-  # kafka-network:
-  #   driver: bridge
 
 
 #############
@@ -161,42 +157,42 @@ services:
   ############
   ## deconz ##
   ############
-  deconz:
-    image: deconzcommunity/deconz:latest
-    container_name: deconz
-    restart: unless-stopped
-    networks:
-      - t2_proxy
-    ports:
-      - '2080:2080'
-      - '5090:5090'
-      - '2081:2081'
-      - '6080:6080'
-    volumes:
-      - $DOCKERDIR/deconz:/opt/deCONZ
-      - /etc/localtime:/etc/localtime:ro
-    devices:
-      - /dev/ttyACM1  # Zigbee
-    environment:
-      - DECONZ_WEB_PORT=2080
-      - DECONZ_WS_PORT=2081
-      - DEBUG_INFO=1
-      - DEBUG_APS=0
-      - DEBUG_ZCL=0
-      - DEBUG_ZDP=0
-      - DEBUG_OTAU=0
-      - DECONZ_DEVICE=/dev/ttyACM1
-      - DECONZ_VNC_MODE=1
-      - DECONZ_VNC_PORT=5900
-      - DECONZ_VNC_PASSWORD=$VNCPASSWORD
-      - DECONZ_NOVNC_PORT=6080
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.deconz-rtr.entrypoints=https"
-      - "traefik.http.routers.deconz-rtr.rule=Host(`deconz.$DOMAINNAME`)"
-      - "traefik.http.routers.deconz-rtr.middlewares=chain-white-list@file"
-      - "traefik.http.routers.deconz-rtr.service=deconz-svc"
-      - "traefik.http.services.deconz-svc.loadbalancer.server.port=2080"
+  # deconz:
+  #   image: deconzcommunity/deconz:latest
+  #   container_name: deconz
+  #   restart: unless-stopped
+  #   networks:
+  #     - t2_proxy
+  #   ports:
+  #     - '2080:2080'
+  #     - '5090:5090'
+  #     - '2081:2081'
+  #     - '6080:6080'
+  #   volumes:
+  #     - $DOCKERDIR/deconz:/opt/deCONZ
+  #     - /etc/localtime:/etc/localtime:ro
+  #   devices:
+  #     - /dev/ttyACM1  # Zigbee
+  #   environment:
+  #     - DECONZ_WEB_PORT=2080
+  #     - DECONZ_WS_PORT=2081
+  #     - DEBUG_INFO=1
+  #     - DEBUG_APS=0
+  #     - DEBUG_ZCL=0
+  #     - DEBUG_ZDP=0
+  #     - DEBUG_OTAU=0
+  #     - DECONZ_DEVICE=/dev/ttyACM1
+  #     - DECONZ_VNC_MODE=1
+  #     - DECONZ_VNC_PORT=5900
+  #     - DECONZ_VNC_PASSWORD=$VNCPASSWORD
+  #     - DECONZ_NOVNC_PORT=6080
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.deconz-rtr.entrypoints=https"
+  #     - "traefik.http.routers.deconz-rtr.rule=Host(`deconz.$DOMAINNAME`)"
+  #     - "traefik.http.routers.deconz-rtr.middlewares=chain-white-list@file"
+  #     - "traefik.http.routers.deconz-rtr.service=deconz-svc"
+  #     - "traefik.http.services.deconz-svc.loadbalancer.server.port=2080"
 
 
   #######################
@@ -247,14 +243,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
     network_mode: host
-    # ports:
-    #   - '8123:8123'
     devices:
       - /dev/ttyUSB0  # DSMR
-      - /dev/ttyACM0  # Z-wave
-    depends_on:
-      # - pihole
-      - deconz
     labels:
       - "traefik.enable=false"
 
@@ -292,31 +282,31 @@ services:
 ###############
 ## AppDaemon ##
 ###############
-  appdaemon:
-    container_name: appdaemon
-    image: acockburn/appdaemon:latest
-    volumes:
-      - $DOCKERDIR/appdaemon/conf:/conf
-      - $DOCKERDIR/secrets.yaml:/conf/secrets.yaml:ro
-      - /etc/localtime:/etc/localtime:ro
-    ports:
-      - '5050:80'
-    networks:
-      - t2_proxy
-    restart: unless-stopped
-    user: "$PUID:$PGID"
-    environment:
-      - PUID=$PUID
-      - PGID=$PGID
-    depends_on:
-      - homeassistant
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.appdaemon-rtr.entrypoints=https"
-      - "traefik.http.routers.appdaemon-rtr.rule=Host(`appdaemon.$DOMAINNAME`)"
-      - "traefik.http.routers.appdaemon-rtr.middlewares=chain-white-list@file"
-      - "traefik.http.routers.appdaemon-rtr.service=appdaemon-svc"
-      - "traefik.http.services.appdaemon-svc.loadbalancer.server.port=80"
+  # appdaemon:
+  #   container_name: appdaemon
+  #   image: acockburn/appdaemon:latest
+  #   volumes:
+  #     - $DOCKERDIR/appdaemon/conf:/conf
+  #     - $DOCKERDIR/secrets.yaml:/conf/secrets.yaml:ro
+  #     - /etc/localtime:/etc/localtime:ro
+  #   ports:
+  #     - '5050:80'
+  #   networks:
+  #     - t2_proxy
+  #   restart: unless-stopped
+  #   user: "$PUID:$PGID"
+  #   environment:
+  #     - PUID=$PUID
+  #     - PGID=$PGID
+  #   depends_on:
+  #     - homeassistant
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.appdaemon-rtr.entrypoints=https"
+  #     - "traefik.http.routers.appdaemon-rtr.rule=Host(`appdaemon.$DOMAINNAME`)"
+  #     - "traefik.http.routers.appdaemon-rtr.middlewares=chain-white-list@file"
+  #     - "traefik.http.routers.appdaemon-rtr.service=appdaemon-svc"
+  #     - "traefik.http.services.appdaemon-svc.loadbalancer.server.port=80"
 
 
   ##############
@@ -485,3 +475,16 @@ services:
       - "traefik.http.routers.teslamate-rtr.service=teslamate-svc"
       - "traefik.http.routers.teslamate-rtr.middlewares=chain-white-list@file"
       - "traefik.http.services.teslamate-svc.loadbalancer.server.port=4000"
+
+  # zigbee2mqtt:
+  #   container_name: zigbee2mqtt
+  #   image: koenkk/zigbee2mqtt
+  #   restart: unless-stopped
+  #   networks:
+  #     - t2_proxy
+  #   environment:
+  #     - TZ=$TZ
+  #   volumes:
+  #     - $DOCKERDIR/zigbee2mqtt:/app/data
+  #   ports:
+  #     - 1082:8080
