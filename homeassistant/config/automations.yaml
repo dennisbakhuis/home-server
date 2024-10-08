@@ -423,3 +423,79 @@
     target:
       entity_id: input_select.licht_keuken_laag
   mode: single
+- id: '1728236792511'
+  alias: Doorbell notifier
+  description: Send a message when someone pulls the doorbell
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.doorbell_opening
+    from: 'off'
+    to: 'on'
+  conditions: []
+  actions:
+  - action: notify.everybody
+    metadata: {}
+    data:
+      message: Ding dong!
+  - if:
+    - condition: state
+      entity_id: media_player.lg_television
+      state: 'on'
+    then:
+    - action: notify.lg_webos_smart_tv
+      metadata: {}
+      data:
+        message: Ding Dong!
+  mode: single
+- id: '1728238400888'
+  alias: Wc stank afzuiger
+  description: Zet de ecofan op timer 10min als er voor meer dan 2 minuten beweging
+    is in de wc
+  triggers:
+  - entity_id: binary_sensor.pir_wc_motion
+    from: 'off'
+    to: 'on'
+    trigger: state
+  - entity_id: binary_sensor.pir_wc_motion
+    from: 'on'
+    to: 'off'
+    trigger: state
+  - event_type: timer.finished
+    event_data:
+      entity_id: timer.timer_toilet
+    trigger: event
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.pir_wc_motion
+        state: 'on'
+      sequence:
+      - target:
+          entity_id: timer.timer_toilet
+        data:
+          duration: 00:02:30
+        action: timer.start
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.pir_wc_motion
+        state: 'off'
+        for: 00:00:30
+      sequence:
+      - target:
+          entity_id: timer.timer_toilet
+        action: timer.cancel
+        data: {}
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.event_type == ''timer.finished'' and trigger.event.data.entity_id
+          == ''timer.timer_toilet'' }}'
+      sequence:
+      - target:
+          entity_id: fan.nrg_itho_b3b4_fan
+        data:
+          preset_mode: Timer 10min
+        action: fan.set_ppreset_mode
+  mode: single
