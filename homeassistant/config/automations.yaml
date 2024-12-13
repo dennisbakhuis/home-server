@@ -499,3 +499,35 @@
           preset_mode: Timer 10min
         action: fan.set_ppreset_mode
   mode: single
+- id: '1728913767321'
+  alias: Toggle zithoek
+  description: ''
+  triggers:
+  - device_id: cd783e8253106596db4524ba85496f5e
+    domain: shelly
+    type: single_push
+    subtype: button1
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.toggle
+    target:
+      entity_id: light.texas_instruments_cc2652_zithoek
+    data: {}
+  mode: single
+- id: '1728913847298'
+  alias: Toggle eettafellicht
+  description: ''
+  triggers:
+  - device_id: c8aff02ea2f66488d83f87dcce929942
+    domain: shelly
+    type: single_push
+    subtype: button1
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.toggle
+    data: {}
+    target:
+      entity_id: light.texas_instruments_cc2652_eettafel
+  mode: single

@@ -416,7 +416,7 @@ services:
 
 
   ################
-  ## Tesla Mate ##
+  ## tesla mate ##
   ################
   tesla_grafana:
     image: teslamate/grafana:latest
@@ -424,12 +424,12 @@ services:
     networks:
       - t2_proxy
     environment:
-      - TZ=$TZ
-      - DATABASE_USER=$TESLA_DATABASE_USERNAME
-      - DATABASE_PASS=$TESLA_DATABASE_PASSWORD
-      - DATABASE_NAME=$TESLA_DATABASE_NAME
-      - DATABASE_HOST=$TESLA_DATABASE_HOST
-      - DATABASE_PORT=$TESLA_DATABASE_PORT
+      - tz=$TZ
+      - database_user=$TESLA_DATABASE_USERNAME
+      - database_pass=$TESLA_DATABASE_PASSWORD
+      - database_name=$TESLA_DATABASE_NAME
+      - database_host=$TESLA_DATABASE_HOST
+      - database_port=$TESLA_DATABASE_PORT
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - teslamate-grafana-data:/var/lib/grafana
@@ -439,7 +439,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.tesla-grafana-rtr.entrypoints=https"
-      - "traefik.http.routers.tesla-grafana-rtr.rule=Host(`tesla.$DOMAINNAME`)"
+      - "traefik.http.routers.tesla-grafana-rtr.rule=host(`tesla.$DOMAINNAME`)"
       - "traefik.http.routers.tesla-grafana-rtr.service=tesla-grafana-svc"
       - "traefik.http.routers.tesla-grafana-rtr.middlewares=chain-white-list@file"
       - "traefik.http.services.tesla-grafana-svc.loadbalancer.server.port=3000"
@@ -476,15 +476,32 @@ services:
       - "traefik.http.routers.teslamate-rtr.middlewares=chain-white-list@file"
       - "traefik.http.services.teslamate-svc.loadbalancer.server.port=4000"
 
-  # zigbee2mqtt:
-  #   container_name: zigbee2mqtt
-  #   image: koenkk/zigbee2mqtt
-  #   restart: unless-stopped
+  ###############
+  ## Scavenger ##
+  ###############
+  # tennet_scavenger:
+  #   image: dennisbakhuis/scavenger-hunt:latest
+  #   container_name: scavenger
   #   networks:
   #     - t2_proxy
   #   environment:
-  #     - TZ=$TZ
+  #     - tz=$TZ
   #   volumes:
-  #     - $DOCKERDIR/zigbee2mqtt:/app/data
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - $DOCKERDIR/scavenger:/app/state
   #   ports:
-  #     - 1082:8080
+  #     - "8501:8501"
+  #     - "8502:8502"
+  #   restart: unless-stopped
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.scavenger-rtr.entrypoints=https"
+    #   - "traefik.http.routers.scavenger-rtr.rule=host(`scavenger-hunt.$domainname`)"
+    #   - "traefik.http.routers.scavenger-rtr.service=scavenger-svc"
+    #   # - "traefik.http.routers.scavenger-rtr.middlewares=chain-no-auth@file"
+    #   - "traefik.http.services.scavenger-svc.loadbalancer.server.port=8501"
+    #   - "traefik.http.routers.scavenger-admin-rtr.entrypoints=https"
+    #   - "traefik.http.routers.scavenger-admin-rtr.rule=host(`scavenger-hunt-admin.$domainname`)"
+    #   - "traefik.http.routers.scavenger-admin-rtr.service=scavenger-admin-svc"
+    #   # - "traefik.http.routers.scavenger-admin-rtr.middlewares=chain-no-auth@file"
+    #   - "traefik.http.services.scavenger-admin-svc.loadbalancer.server.port=8502"
