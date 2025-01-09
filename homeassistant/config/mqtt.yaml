@@ -1,0 +1,28 @@
+fan:
+  - name: Itho box
+    device:
+      identifiers: "mv"
+      name: "Itho Box"
+      manufacturer: "Itho Daalderop"
+      model: "CVE ECOFAN 2"
+      configuration_url: "http://192.168.50.246"
+    availability_topic: itho/lwt
+    unique_id: nrg-itho-1
+    state_topic: itho/state
+    state_value_template: '{% if value == ''0'' %}OFF{% else %}ON{% endif %}'
+    json_attributes_topic: itho/ithostatus
+    command_topic: itho/cmd
+    preset_mode_command_topic: itho/cmd
+    preset_mode_state_topic: itho/ithostatus
+    payload_off: '0'
+    preset_mode_command_template: "{\"vremote\":\"{{value}}\",\"vremotename\":\"centraal\"}"
+    preset_mode_value_template: "{% set am = value_json['Actual Mode'] | int %}{% if am == 1 %}low{% elif am == 2 %}medium {% elif am == 3 %}high{% elif am == 13 %}timer{% elif am == 24 %}auto{% elif am == 25 %}autonight{% else %}{{ am }}{% endif %}"
+    preset_modes:
+      - "low"
+      - "medium"
+      - "high"
+      - "auto"
+      - "autonight"
+      - "timer1"
+      - "timer2"
+      - "timer3"

@@ -29,7 +29,6 @@ telegram_bot:
       - !secret chatid_dennis
       - !secret chatid_kim
 
-
 notify:
   - platform: telegram
     name: telegram_dennis
@@ -47,6 +46,7 @@ notify:
 script: !include scripts.yaml
 automation: !include automations.yaml
 scene: !include scenes.yaml
+mqtt: !include mqtt.yaml
 
 
 # Data collection

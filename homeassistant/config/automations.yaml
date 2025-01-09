@@ -457,47 +457,63 @@
     from: 'off'
     to: 'on'
     trigger: state
-  - entity_id: binary_sensor.pir_wc_motion
+    id: motion_detected
+  - entity_id:
+    - binary_sensor.pir_wc_motion
     from: 'on'
     to: 'off'
     trigger: state
+    id: motion_clear
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
   - event_type: timer.finished
     event_data:
       entity_id: timer.timer_toilet
     trigger: event
+    id: timer_finished
   conditions: []
   actions:
   - choose:
     - conditions:
+      - condition: trigger
+        id:
+        - motion_detected
       - condition: state
-        entity_id: binary_sensor.pir_wc_motion
-        state: 'on'
+        entity_id: timer.timer_toilet
+        state: idle
       sequence:
-      - target:
-          entity_id: timer.timer_toilet
+      - action: timer.start
+        metadata: {}
         data:
-          duration: 00:02:30
-        action: timer.start
-    - conditions:
-      - condition: state
-        entity_id: binary_sensor.pir_wc_motion
-        state: 'off'
-        for: 00:00:30
-      sequence:
-      - target:
+          duration: 0:02:30
+        target:
           entity_id: timer.timer_toilet
-        action: timer.cancel
+    - conditions:
+      - condition: trigger
+        id:
+        - motion_clear
+      - condition: state
+        entity_id: timer.timer_toilet
+        state: active
+      sequence:
+      - action: timer.cancel
+        metadata: {}
         data: {}
+        target:
+          entity_id: timer.timer_toilet
     - conditions:
-      - condition: template
-        value_template: '{{ trigger.event.event_type == ''timer.finished'' and trigger.event.data.entity_id
-          == ''timer.timer_toilet'' }}'
+      - condition: trigger
+        id:
+        - timer_finished
       sequence:
-      - target:
-          entity_id: fan.nrg_itho_b3b4_fan
+      - action: fan.set_preset_mode
+        metadata: {}
         data:
-          preset_mode: Timer 10min
-        action: fan.set_ppreset_mode
+          preset_mode: timer1
+        target:
+          entity_id: fan.ecofan
   mode: single
 - id: '1728913767321'
   alias: Toggle zithoek
