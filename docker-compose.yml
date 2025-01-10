@@ -1,13 +1,14 @@
-version: "3.7"
-
+##########################
+# Bakhuis home server    #
+# Author: Dennis Bakhuis #
+##########################
 
 ##############
 ## networks ##
 ##############
 networks:
   t2_proxy:
-    external:
-      name: t2_proxy
+    external: true
 
 
 #############
@@ -22,7 +23,6 @@ volumes:
 ## services ##
 ##############
 services:
-
 
   #############
   ## traefik ##
@@ -109,90 +109,10 @@ services:
       # - "traefik.http.routers.traefik-rtr.tls.certresolver=dns-cloudflare" # Comment out this line after first run of traefik to force the use of wildcard certs
       - "traefik.http.routers.traefik-rtr.tls.domains[0].main=$DOMAINNAME"
       - "traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.$DOMAINNAME"
-#      - "traefik.http.routers.traefik-rtr.tls.domains[1].main=$SECONDDOMAINNAME" # Pulls main cert for second domain
-#      - "traefik.http.routers.traefik-rtr.tls.domains[1].sans=*.$SECONDDOMAINNAME" # Pulls wildcard cert for second domain
       ## Services - API
       - "traefik.http.routers.traefik-rtr.service=api@internal"
       ## Middlewares
       - "traefik.http.routers.traefik-rtr.middlewares=chain-white-list@file"
-
-
-  ##############
-  ### pi-hole ##
-  ##############
-  #pihole:
-  #  container_name: pihole
-  #  domainname: docker
-  #  hostname: pihole
-  #  image: pihole/pihole:latest
-  #  ports:
-  #    - '53:53/tcp'
-  #    - '53:53/udp'
-  #    - '8182:80'
-  #    - '8183:443'
-  #  restart: unless-stopped
-  #  # depends_on:
-  #  #   - traefik
-  #  volumes:
-  #    - $DOCKERDIR/pihole/pihole:/etc/pihole
-  #    - $DOCKERDIR/pihole/dnsmasq.d:/etc/dnsmasq.d
-  #  networks:
-  #    - t2_proxy
-  #  environment:
-  #    - VIRTUAL_HOST=pihole.$DOMAINNAME
-  #    - VIRTUAL_PORT=80
-  #    - TZ=$TZ
-  #    - WEBPASSWORD=$PIHOLEWEBPASSWORD
-  #    - DNS1=$PIHOLE_LOCAL_DNS
-  #    - DNS2=$PIHOLE_UPSTREAM_DNS
-  #  labels:
-  #    - "traefik.enable=true"
-  #    - "traefik.http.routers.pihole-rtr.entrypoints=https"
-  #    - "traefik.http.routers.pihole-rtr.rule=Host(`pihole.$DOMAINNAME`)"
-  #    - "traefik.http.routers.pihole-rtr.middlewares=chain-white-list@file"
-  #    - "traefik.http.routers.pihole-rtr.service=pihole-svc"
-  #    - "traefik.http.services.pihole-svc.loadbalancer.server.port=80"
-
-
-  ############
-  ## deconz ##
-  ############
-  # deconz:
-  #   image: deconzcommunity/deconz:latest
-  #   container_name: deconz
-  #   restart: unless-stopped
-  #   networks:
-  #     - t2_proxy
-  #   ports:
-  #     - '2080:2080'
-  #     - '5090:5090'
-  #     - '2081:2081'
-  #     - '6080:6080'
-  #   volumes:
-  #     - $DOCKERDIR/deconz:/opt/deCONZ
-  #     - /etc/localtime:/etc/localtime:ro
-  #   devices:
-  #     - /dev/ttyACM1  # Zigbee
-  #   environment:
-  #     - DECONZ_WEB_PORT=2080
-  #     - DECONZ_WS_PORT=2081
-  #     - DEBUG_INFO=1
-  #     - DEBUG_APS=0
-  #     - DEBUG_ZCL=0
-  #     - DEBUG_ZDP=0
-  #     - DEBUG_OTAU=0
-  #     - DECONZ_DEVICE=/dev/ttyACM1
-  #     - DECONZ_VNC_MODE=1
-  #     - DECONZ_VNC_PORT=5900
-  #     - DECONZ_VNC_PASSWORD=$VNCPASSWORD
-  #     - DECONZ_NOVNC_PORT=6080
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.deconz-rtr.entrypoints=https"
-  #     - "traefik.http.routers.deconz-rtr.rule=Host(`deconz.$DOMAINNAME`)"
-  #     - "traefik.http.routers.deconz-rtr.middlewares=chain-white-list@file"
-  #     - "traefik.http.routers.deconz-rtr.service=deconz-svc"
-  #     - "traefik.http.services.deconz-svc.loadbalancer.server.port=2080"
 
 
   #######################
@@ -207,27 +127,6 @@ services:
       - $DOCKERDIR/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
       - $DOCKERDIR/secrets/mosquitto.passwd:/mosquitto/config/mosquitto.passwd
       - /etc/localtime:/etc/localtime:ro
-
-
-  ##############
-  ### zwavejs ##
-  ##############
-  #zwavejs:
-  #  container_name: zwavejs
-  #  image: zwavejs/zwavejs2mqtt:latest
-  #  volumes:
-  #    - $DOCKERDIR/zwavejs:/usr/src/app/store
-  #    - /etc/localtime:/etc/localtime:ro
-  #  restart: unless-stopped
-  #  networks:
-  #    - t2_proxy
-  #  ports:
-  #    - '8091:8091'
-  #    - '3000:3000'
-  #  devices:
-  #    - /dev/ttyACM0  # Z-wave
-  #  environment:
-  #    - TZ=$TZ
 
 
   ####################
@@ -277,36 +176,6 @@ services:
       - "traefik.http.routers.visualstudiocode-rtr.middlewares=chain-white-list@file"
       - "traefik.http.routers.visualstudiocode-rtr.service=visualstudiocode-svc"
       - "traefik.http.services.visualstudiocode-svc.loadbalancer.server.port=8443"
-
-
-###############
-## AppDaemon ##
-###############
-  # appdaemon:
-  #   container_name: appdaemon
-  #   image: acockburn/appdaemon:latest
-  #   volumes:
-  #     - $DOCKERDIR/appdaemon/conf:/conf
-  #     - $DOCKERDIR/secrets.yaml:/conf/secrets.yaml:ro
-  #     - /etc/localtime:/etc/localtime:ro
-  #   ports:
-  #     - '5050:80'
-  #   networks:
-  #     - t2_proxy
-  #   restart: unless-stopped
-  #   user: "$PUID:$PGID"
-  #   environment:
-  #     - PUID=$PUID
-  #     - PGID=$PGID
-  #   depends_on:
-  #     - homeassistant
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.appdaemon-rtr.entrypoints=https"
-  #     - "traefik.http.routers.appdaemon-rtr.rule=Host(`appdaemon.$DOMAINNAME`)"
-  #     - "traefik.http.routers.appdaemon-rtr.middlewares=chain-white-list@file"
-  #     - "traefik.http.routers.appdaemon-rtr.service=appdaemon-svc"
-  #     - "traefik.http.services.appdaemon-svc.loadbalancer.server.port=80"
 
 
   ##############
@@ -476,32 +345,45 @@ services:
       - "traefik.http.routers.teslamate-rtr.middlewares=chain-white-list@file"
       - "traefik.http.services.teslamate-svc.loadbalancer.server.port=4000"
 
-  ###############
-  ## Scavenger ##
-  ###############
-  # tennet_scavenger:
-  #   image: dennisbakhuis/scavenger-hunt:latest
-  #   container_name: scavenger
-  #   networks:
-  #     - t2_proxy
-  #   environment:
-  #     - tz=$TZ
-  #   volumes:
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - $DOCKERDIR/scavenger:/app/state
+
+  ###########
+  ## Kafka ##
+  ###########
+  # kafka:
+  #   image: apache/kafka:latest
+  #   container_name: kafka
   #   ports:
-  #     - "8501:8501"
-  #     - "8502:8502"
+  #     - "9092:9092"
+  #   environment:
+  #     KAFKA_LISTENERS: CONTROLLER://localhost:9091,HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093,t2_proxy://0.0.0.0:9094
+  #     KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:9093,t2_proxy://0.0.0.0:9094
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT,HOST:PLAINTEXT,t2_proxy:PLAINTEXT
+  #     KAFKA_NODE_ID: 1
+  #     KAFKA_PROCESS_ROLES: broker,controller
+  #     KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+  #     KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9091
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
   #   restart: unless-stopped
-    # labels:
-    #   - "traefik.enable=true"
-    #   - "traefik.http.routers.scavenger-rtr.entrypoints=https"
-    #   - "traefik.http.routers.scavenger-rtr.rule=host(`scavenger-hunt.$domainname`)"
-    #   - "traefik.http.routers.scavenger-rtr.service=scavenger-svc"
-    #   # - "traefik.http.routers.scavenger-rtr.middlewares=chain-no-auth@file"
-    #   - "traefik.http.services.scavenger-svc.loadbalancer.server.port=8501"
-    #   - "traefik.http.routers.scavenger-admin-rtr.entrypoints=https"
-    #   - "traefik.http.routers.scavenger-admin-rtr.rule=host(`scavenger-hunt-admin.$domainname`)"
-    #   - "traefik.http.routers.scavenger-admin-rtr.service=scavenger-admin-svc"
-    #   # - "traefik.http.routers.scavenger-admin-rtr.middlewares=chain-no-auth@file"
-    #   - "traefik.http.services.scavenger-admin-svc.loadbalancer.server.port=8502"
+
+  kafkaui:
+    container_name: kafkaui
+    image: provectuslabs/kafka-ui:latest
+    networks:
+      - t2_proxy
+    ports:
+      - 8080:8080
+    environment:
+      KAFKA_CLUSTERS_0_NAME: BakhuisCluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: localhost:9094
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kafkaui-rtr.entrypoints=https"
+      - "traefik.http.routers.kafkaui-rtr.rule=Host(`kafkaui.$DOMAINNAME`)"
+      - "traefik.http.routers.kafkaui-rtr.service=kafkaui-svc"
+      - "traefik.http.routers.kafkaui-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.services.kafkaui-svc.loadbalancer.server.port=8080"
+
