@@ -233,7 +233,8 @@ services:
   # Voorvoet_importeer_tool ##
   ############################
   voorvoet_import_tool:
-    image: dennisbakhuis/voorvoet_eboekhouden_app:latest
+    # image: dennisbakhuis/voorvoet_eboekhouden_app:latest
+    image: ghcr.io/dennisbakhuis/voorvoet_eboekhouden_app:latest
     container_name: voorvoet_eboekhouden
     networks:
       - t2_proxy
@@ -324,8 +325,8 @@ services:
   ## Kafka ##
   ###########
   kafka:
-    image: apache/kafka:latest
     container_name: kafka
+    image: apache/kafka:latest
     networks:
       - t2_proxy
     ports:
@@ -362,4 +363,31 @@ services:
       - "traefik.http.routers.kafkaui-rtr.service=kafkaui-svc"
       - "traefik.http.routers.kafkaui-rtr.middlewares=chain-white-list@file"
       - "traefik.http.services.kafkaui-svc.loadbalancer.server.port=8080"
+
+
+  #############
+  ## Prefect ##
+  #############
+  prefect:
+    container_name: prefect
+    image: prefecthq/prefect:3-python3.12
+    networks:
+      - t2_proxy
+    ports:
+      - 4200:4200
+    # volumes:
+    #   - $DOCKERDIR/prefect:/root/.prefect
+    entrypoint: ["prefect", "server", "start"]
+    environment:
+      - PREFECT_SERVER_API_HOST=0.0.0.0
+      - PREFECT_UI_URL=https://prefect.$DOMAINNAME/api
+      - PREFECT_API_URL=https://prefect.$DOMAINNAME/api
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prefect-rtr.entrypoints=https"
+      - "traefik.http.routers.prefect-rtr.rule=Host(`prefect.$DOMAINNAME`)"
+      - "traefik.http.routers.prefect-rtr.service=prefect-svc"
+      - "traefik.http.routers.prefect-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.services.prefect-svc.loadbalancer.server.port=4200"
 
