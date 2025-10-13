@@ -17,6 +17,7 @@ networks:
 volumes:
   teslamate-grafana-data:
   teslamate-app-data:
+  pocketbase-data:
 
 
 ##############
@@ -36,7 +37,7 @@ services:
       - --global.sendAnonymousUsage=false
       - --entryPoints.https.address=:443
       # Allow these IPs to set the X-Forwarded-* headers - Cloudflare IPs: https://www.cloudflare.com/ips/
-      - --entrypoints.https.forwardedHeaders.trustedIPs=173.245.48.0/20, 103.21.244.0/22, 103.22.200.0/22, 103.31.4.0/22, 141.101.64.0/18, 108.162.192.0/18, 190.93.240.0/20, 188.114.96.0/20, 197.234.240.0/22, 198.41.128.0/17, 162.158.0.0/15, 172.64.0.0/13, 131.0.72.0/22, 104.16.0.0/13, 104.24.0.0/14, 192.168.0.0/24
+      - --entrypoints.https.forwardedHeaders.trustedIPs=173.245.48.0/20, 103.21.244.0/22, 103.22.200.0/22, 103.31.4.0/22, 141.101.64.0/18, 108.162.192.0/18, 190.93.240.0/20, 188.114.96.0/20, 197.234.240.0/22, 198.41.128.0/17, 162.158.0.0/15, 104.16.0.0/13, 104.24.0.0/14, 172.64.0.0/13, 131.0.72.0/22
       - --api=true
       - --log=true
       - --log.level=WARN # (Default: error) DEBUG, INFO, WARN, ERROR, FATAL, PANIC
@@ -320,74 +321,32 @@ services:
       - "traefik.http.routers.teslamate-rtr.middlewares=chain-white-list@file"
       - "traefik.http.services.teslamate-svc.loadbalancer.server.port=4000"
 
-
-  ###########
-  ## Kafka ##
-  ###########
-  # kafka:
-  #   container_name: kafka
-  #   image: apache/kafka:latest
-  #   networks:
-  #     - t2_proxy
-  #   ports:
-  #     - "9092:9092"
-  #   environment:
-  #     KAFKA_LISTENERS: CONTROLLER://0.0.0.0:9091,PLAINTEXT://0.0.0.0:9092
-  #     KAFKA_ADVERTISED_LISTENERS: CONTROLLER://localhost:9091,PLAINTEXT://$SERVERIP:9092
-  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-  #     KAFKA_NODE_ID: 1
-  #     KAFKA_PROCESS_ROLES: broker,controller
-  #     KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-  #     KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9091
-  #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-  #   restart: unless-stopped
-
-  # kafkaui:
-  #   container_name: kafkaui
-  #   image: provectuslabs/kafka-ui:latest
-  #   networks:
-  #     - t2_proxy
-  #   ports:
-  #     - 8080:8080
-  #   environment:
-  #     KAFKA_CLUSTERS_0_NAME: BakhuisCluster
-  #     KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: $SERVERIP:9092
-  #   volumes:
-  #     - /etc/localtime:/etc/localtime:ro
-  #   restart: unless-stopped
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.kafkaui-rtr.entrypoints=https"
-  #     - "traefik.http.routers.kafkaui-rtr.rule=Host(`kafkaui.$DOMAINNAME`)"
-  #     - "traefik.http.routers.kafkaui-rtr.service=kafkaui-svc"
-  #     - "traefik.http.routers.kafkaui-rtr.middlewares=chain-white-list@file"
-  #     - "traefik.http.services.kafkaui-svc.loadbalancer.server.port=8080"
-
-
-  #############
-  ## Prefect ##
-  #############
-  # prefect:
-  #   container_name: prefect
-  #   image: prefecthq/prefect:3-python3.12
-  #   networks:
-  #     - t2_proxy
-  #   ports:
-  #     - 4200:4200
-  #   # volumes:
-  #   #   - $DOCKERDIR/prefect:/root/.prefect
-  #   entrypoint: ["prefect", "server", "start"]
-  #   environment:
-  #     - PREFECT_SERVER_API_HOST=0.0.0.0
-  #     - PREFECT_UI_URL=https://prefect.$DOMAINNAME/api
-  #     - PREFECT_API_URL=https://prefect.$DOMAINNAME/api
-  #   restart: unless-stopped
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.prefect-rtr.entrypoints=https"
-  #     - "traefik.http.routers.prefect-rtr.rule=Host(`prefect.$DOMAINNAME`)"
-  #     - "traefik.http.routers.prefect-rtr.service=prefect-svc"
-  #     - "traefik.http.routers.prefect-rtr.middlewares=chain-white-list@file"
-  #     - "traefik.http.services.prefect-svc.loadbalancer.server.port=4200"
-
+##############
+# Pocketbase #
+##############
+  pocketbase:
+    image: ghcr.io/muchobien/pocketbase:latest
+    container_name: pocketbase
+    networks:
+      - t2_proxy
+    command:
+      - --encryptionEnv
+      - ENCRYPTION
+    environment:
+      - TZ=$TZ
+      - ENCRYPTION=$POCKETBASE_ENCRYPTION_KEY
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - pocketbase-data:/pb_data
+    ports:
+      - 8090:8090
+    cap_drop:
+      - all
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pocketbase-rtr.entrypoints=https"
+      - "traefik.http.routers.pocketbase-rtr.rule=Host(`pocketbase.$DOMAINNAME`)"
+      - "traefik.http.routers.pocketbase-rtr.service=pocketbase-svc"
+      - "traefik.http.routers.pocketbase-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.services.pocketbase-svc.loadbalancer.server.port=8090"

@@ -6,6 +6,8 @@ homeassistant:
     - type: notify
       include:
         - everybody
+  allowlist_external_dirs:
+    - /tmp
 
 
 default_config:
@@ -22,12 +24,12 @@ recorder:
   purge_keep_days: 5
 
 
-telegram_bot:
-  - platform: polling
-    api_key: !secret bottoken
-    allowed_chat_ids:
-      - !secret chatid_dennis
-      - !secret chatid_kim
+# telegram_bot:
+#   - platform: polling
+#     api_key: !secret bottoken
+#     allowed_chat_ids:
+#       - !secret chatid_dennis
+#       - !secret chatid_kim
 
 notify:
   - platform: telegram
@@ -41,7 +43,6 @@ notify:
     services:
       - service: telegram_dennis
       - service: telegram_kim
-
 
 script: !include scripts.yaml
 automation: !include automations.yaml
@@ -65,5 +66,7 @@ influxdb:
       - sensor.br_temperature
       - sensor.power_production
 
-
 wake_on_lan:
+
+shell_command:
+  delete_file: 'rm -f "{{ path }}"'

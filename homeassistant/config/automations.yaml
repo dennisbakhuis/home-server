@@ -188,13 +188,13 @@
     - input_select.licht_keuken_laag
     id: change_low_state
     trigger: state
-  - device_id: aa2612844b6a59e4e6c5dae5c4268a4f
+  - alias: Button right short
+    device_id: d4a07d9550cb3f0a283dda8f7fac3e75
     domain: shelly
-    type: single
-    subtype: button
-    id: right_button_short
-    alias: Button right short
+    type: single_push
+    subtype: button1
     trigger: device
+    id: right_button_short
   conditions: []
   actions:
   - choose:
@@ -425,29 +425,43 @@
   mode: single
 - id: '1728236792511'
   alias: Doorbell notifier
-  description: Send a message when someone pulls the doorbell
   triggers:
   - trigger: state
-    entity_id:
-    - binary_sensor.doorbell_opening
+    entity_id: binary_sensor.doorbell_opening
     from: 'off'
     to: 'on'
-  conditions: []
+  conditions:
+  - condition: template
+    value_template: "{{ this.attributes.last_triggered is none\n   or (as_timestamp(now())
+      - as_timestamp(this.attributes.last_triggered)) > 10 }}"
   actions:
+  - action: camera.snapshot
+    data:
+      entity_id: '{{ cam }}'
+      filename: '{{ snap }}'
+  - delay: 00:00:01
   - action: notify.everybody
-    metadata: {}
     data:
       message: Ding dong!
+      data:
+        photo:
+        - file: '{{ snap }}'
+          caption: Ding dong!
+  - action: shell_command.delete_file
+    data:
+      path: '{{ snap }}'
   - if:
     - condition: state
       entity_id: media_player.lg_television
       state: 'on'
     then:
     - action: notify.lg_webos_smart_tv
-      metadata: {}
       data:
         message: Ding Dong!
   mode: single
+  variables:
+    cam: camera.camera_oprit_mainstream
+    snap: /tmp/doorbell_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg
 - id: '1728238400888'
   alias: Wc stank afzuiger
   description: Zet de ecofan op timer 10min als er voor meer dan 2 minuten beweging
@@ -546,4 +560,21 @@
     data: {}
     target:
       entity_id: light.texas_instruments_cc2652_eettafel
+  mode: single
+- id: '1751226642347'
+  alias: Toggle tuinkamer eettafel licht
+  description: Toggle light for tuinkamer licht
+  triggers:
+  - device_id: c8468499b4d7fc0fb7095a75da8f36fe
+    domain: shelly
+    type: single_push
+    subtype: button1
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.toggle
+    data:
+      transition: 1
+    target:
+      entity_id: light.texas_instruments_cc2652_tuinkamer_eettafel
   mode: single
