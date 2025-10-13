@@ -10,7 +10,6 @@ networks:
   t2_proxy:
     external: true
 
-
 #############
 ## Volumes ##
 #############
@@ -18,10 +17,9 @@ volumes:
   teslamate-grafana-data:
   teslamate-app-data:
 
-
-##############
-## services ##
-##############
+    ##############
+    ## services ##
+    ##############
 services:
 
   #############
@@ -29,7 +27,7 @@ services:
   #############
   traefik:
     container_name: traefik
-    image: traefik:v3.1
+    image: traefik:v3.5
     restart: unless-stopped
     command:
       - --global.checkNewVersion=true
@@ -58,7 +56,7 @@ services:
       - --certificatesResolvers.dns-cloudflare.acme.storage=/acme.json
       - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.provider=cloudflare
       - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.resolvers=1.1.1.1:53,1.0.0.1:53
-      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.delayBeforeCheck=90 # To delay DNS check and reduce LE hitrate
+      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.propagation.delayBeforeChecks=90 # To delay DNS check and reduce LE hitrate
     networks:
       t2_proxy:
         ipv4_address: $TRAEFIKIP
@@ -88,7 +86,6 @@ services:
       - "traefik.http.routers.traefik-rtr.service=api@internal"
       - "traefik.http.routers.traefik-rtr.middlewares=chain-white-list@file"
 
-
   #######################
   ## mosquitto-eclipse ##
   #######################
@@ -97,11 +94,11 @@ services:
     container_name: mosquitto
     network_mode: host
     restart: unless-stopped
-    volumes:  # not using persistence
+    volumes:
+      # not using persistence
       - $DOCKERDIR/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
       - $DOCKERDIR/secrets/mosquitto.passwd:/mosquitto/config/mosquitto.passwd
       - /etc/localtime:/etc/localtime:ro
-
 
   ####################
   ## home-assistant ##
@@ -117,10 +114,9 @@ services:
     restart: unless-stopped
     network_mode: host
     devices:
-      - /dev/ttyUSB0  # DSMR
+      - /dev/ttyUSB0 # DSMR
     labels:
       - "traefik.enable=false"
-
 
   ##############
   ## node-red ##
@@ -147,7 +143,6 @@ services:
       - "traefik.http.routers.nodered-rtr.service=nodered-svc"
       - "traefik.http.services.nodered-svc.loadbalancer.server.port=1880"
 
-
   ###############################
   ## growatt monitoring: grott ##
   ###############################
@@ -168,7 +163,6 @@ services:
       - gpvsystemid=$PVORG_SYSTEM_ID
       - gblockcmd=True
 
-
   ##############
   ## heimdall ##
   ##############
@@ -184,9 +178,6 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - $DOCKERDIR/heimdall:/config
-    # ports:
-    #   - 1080:80
-    #   - 1443:443
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
@@ -195,7 +186,6 @@ services:
       - "traefik.http.routers.heimdall-rtr.service=heimdall-svc"
       - "traefik.http.routers.heimdall-rtr.middlewares=chain-white-list@file"
       - "traefik.http.services.heimdall-svc.loadbalancer.server.port=80"
-
 
   ############################
   # Voorvoet_importeer_tool ##
@@ -214,8 +204,6 @@ services:
       - EBOEKHOUDEN_CODE2=$EBOEKHOUDEN_CODE2
     volumes:
       - /etc/localtime:/etc/localtime:ro
-    ports:
-      - 1081:80
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
@@ -224,7 +212,6 @@ services:
       - "traefik.http.routers.eboekhouden-rtr.service=eboekhouden-svc"
       - "traefik.http.routers.eboekhouden-rtr.middlewares=chain-white-list@file"
       - "traefik.http.services.eboekhouden-svc.loadbalancer.server.port=80"
-
 
   ################
   ## tesla mate ##
@@ -274,8 +261,6 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - teslamate-app-data:/opt/app/import
-    ports:
-      - 4000:4000
     cap_drop:
       - all
     restart: unless-stopped

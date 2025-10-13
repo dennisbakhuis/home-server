@@ -86,11 +86,27 @@ vim .env
 ```
 
 ## Create docker network / pull images / and start the servers
+```bash
 docker network create --gateway 192.168.90.1 --subnet 192.168.90.0/24 t2_proxy
-docker-compose pull
-docker-compose up -d
+docker compose pull
+docker compose up -d
+```
 
+## To update all containers
+Use the automated upgrade script (recommended):
+```bash
+./upgrade_containers.sh
+```
 
-## To update the containers (can be breaking changes; especially with HA)
-docker-compose up --force-recreate --build -d
+Or manually update all containers:
+```bash
+docker compose pull
+docker compose up -d --force-recreate --build --remove-orphans
 docker image prune -f
+```
+
+## To update a specific service
+Update a single service without affecting others (replace `traefik` with any service name):
+```bash
+docker compose up -d traefik --force-recreate --pull always
+```
