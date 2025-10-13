@@ -184,9 +184,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - $DOCKERDIR/heimdall:/config
-    ports:
-      - 1080:80
-      - 1443:443
+    # ports:
+    #   - 1080:80
+    #   - 1443:443
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
