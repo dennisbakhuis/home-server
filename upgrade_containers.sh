@@ -24,9 +24,9 @@ echo -e "${CYAN}🚀 Home Server Upgrade Script${NC}"
 echo -e "${MAGENTA}================================================${NC}"
 echo ""
 
-# Check if docker-compose is available
-if ! command -v docker-compose &> /dev/null; then
-    echo -e "${RED}❌ Error: docker-compose not found. Please install docker-compose first.${NC}"
+# Check if docker compose is available
+if ! docker compose version &> /dev/null; then
+    echo -e "${RED}❌ Error: docker compose not found. Please install Docker Compose V2 first.${NC}"
     exit 1
 fi
 
@@ -38,13 +38,13 @@ fi
 
 echo -e "${YELLOW}📥 Step 1: Pulling latest images...${NC}"
 echo -e "${BLUE}--------------------------------${NC}"
-docker-compose pull
+docker compose pull
 
 echo ""
 echo -e "${YELLOW}🔄 Step 2: Recreating all containers...${NC}"
 echo -e "${BLUE}-------------------------------------${NC}"
 echo -e "${CYAN}This will force-recreate all containers, rebuild if needed, and remove orphans...${NC}"
-docker-compose up -d --force-recreate --build --remove-orphans
+docker compose up -d --force-recreate --build --remove-orphans
 
 echo ""
 echo -e "${YELLOW}🧹 Step 3: Cleaning up old images...${NC}"
@@ -54,7 +54,7 @@ docker image prune -f
 echo ""
 echo -e "${YELLOW}📊 Step 4: Checking container status...${NC}"
 echo -e "${BLUE}--------------------------------------${NC}"
-docker-compose ps
+docker compose ps
 
 echo ""
 echo -e "${MAGENTA}================================================${NC}"
@@ -62,8 +62,8 @@ echo -e "${GREEN}✅ Upgrade completed successfully!${NC}"
 echo -e "${MAGENTA}================================================${NC}"
 echo ""
 echo -e "${CYAN}💡 To view logs of a specific service, run:${NC}"
-echo -e "   ${YELLOW}docker-compose logs -f <service-name>${NC}"
+echo -e "   ${YELLOW}docker compose logs -f <service-name>${NC}"
 echo ""
 echo -e "${CYAN}💡 To view logs of all services, run:${NC}"
-echo -e "   ${YELLOW}docker-compose logs -f${NC}"
+echo -e "   ${YELLOW}docker compose logs -f${NC}"
 echo ""
