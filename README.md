@@ -1,12 +1,15 @@
 # Server Installation instructions
 This a repository with my installation of my domotica servers. In a fresh install of Ubuntu 20.04 Server
 I install docker and run the following services:
-- Traefik (reversed proxy)
-- Pihole (DNS server to block adds)
-- Deconz (Service for my Zigbee network)
-- Home assistant (My home automation server of choice)
-- Visual Studio Code Server (easy editing of configs)
-- AppDaemon (automation programming <- this is amazing)
+- **Traefik** - Reverse proxy with automatic SSL certificates via Cloudflare DNS challenge
+- **Mosquitto** - MQTT broker for IoT device communication
+- **Home Assistant** - Home automation platform for managing smart devices
+- **Node-RED** - Flow-based automation and integration platform
+- **Grott** - Growatt solar inverter monitoring and data collection
+- **Heimdall** - Application dashboard for organizing server services
+- **Voorvoet Import Tool** - Custom e-Boekhouden accounting import application
+- **Teslamate** - Tesla vehicle data logging and tracking
+- **Tesla Grafana** - Grafana dashboard for Tesla vehicle metrics visualization
 
 This is a description meant to help me, but it might be useful for you too. Feel free to contact me on
 [LinkedIn](https://linkedin.com/in/dennisbakhuis).
@@ -63,12 +66,16 @@ git clone https://github.com/dennisbakhuis/home-server.git
 mv ./home-server ./docker
 sudo setfacl -Rdm g:docker:rwx ~/docker
 sudo chmod -R 775 ~/docker
-mkdir -p ~/docker/deconz
-mkdir -p ~/docker/pihole/pihole
-mkdir -p ~/docker/vscode/storage
-mkdir -p ~/docker/pihole/dns-masq.d/
-mkdir -p ~/docker/traefik2/acme
-touch ~/docker/traefik2/acme/acme.json
+mkdir -p ~/docker/traefik/acme
+mkdir -p ~/docker/traefik/logs
+mkdir -p ~/docker/traefik/rules
+mkdir -p ~/docker/mosquitto
+mkdir -p ~/docker/homeassistant/config
+mkdir -p ~/docker/node_red
+mkdir -p ~/docker/heimdall
+mkdir -p ~/docker/shared
+touch ~/docker/traefik/acme/acme.json
+chmod 600 ~/docker/traefik/acme/acme.json
 
 ```
 Copy example .env file and change the passwords
@@ -87,4 +94,3 @@ docker-compose up -d
 ## To update the containers (can be breaking changes; especially with HA)
 docker-compose up --force-recreate --build -d
 docker image prune -f
-

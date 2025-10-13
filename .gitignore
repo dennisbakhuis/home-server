@@ -22,11 +22,6 @@ __pycache__
 appdaemon/conf/compiled
 appdaemon/conf/dashboards
 
-# Authelia
-authelia/configuration.yml
-authelia/notification.txt
-authelia/users_database.yml
-
 # deconz all is generated at start of the container. Settings are saved on stick
 deconz/
 
@@ -39,6 +34,8 @@ homeassistant/config/tts/
 homeassistant/config/webostv.conf
 homeassistant/config/ip_bans.yaml
 homeassistant/config/trusted_proxies.yaml
+homeassistant/config/.HA_VERSION
+homeassistant/config/.ha_run.lock
 
 # node-red (Will be removed soon)
 node_red/

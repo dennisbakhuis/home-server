@@ -47,11 +47,3 @@ http:
           - "<YOUR WAN IP>/32"
         ipStrategy:
           depth: 1
-
-    middlewares-authelia:
-      forwardAuth:
-        address: "http://authelia:9091/api/verify?rd=https://authelia.<YOUR_DOMAIN>"
-        trustForwardHeader: true
-        authResponseHeaders:
-          - "Remote-User"
-          - "Remote-Groups"
