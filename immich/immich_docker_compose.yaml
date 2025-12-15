@@ -1,0 +1,69 @@
+version: "3.8"
+# Install this on my synology as a project.
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:v2.0.1
+    volumes:
+      - /volume1/Immich/library:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      DB_HOSTNAME: immich_postgres
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE_NAME: immich
+      DB_PORT: 5432
+      REDIS_HOSTNAME: immich_redis
+      REDIS_PORT: 6379
+      IMMICH_MACHINE_LEARNING_URL: http://immich-machine-learning:3003
+      TZ: Europe/Amsterdam
+      UPLOAD_LOCATION: /usr/src/app/upload
+    ports:
+      - "2283:2283"
+    depends_on:
+      - redis
+      - database
+    restart: always
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: ghcr.io/immich-app/immich-machine-learning:v2.0.1
+    volumes:
+      - immich-model-cache:/cache
+    environment:
+      DB_HOSTNAME: immich_postgres
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE_NAME: immich
+      DB_PORT: 5432
+      REDIS_HOSTNAME: immich_redis
+      REDIS_PORT: 6379
+      IMMICH_MACHINE_LEARNING_URL: http://immich-machine-learning:3003
+      TZ: Europe/Amsterdam
+    restart: always
+
+  redis:
+    container_name: immich_redis
+    image: docker.io/valkey/valkey:8-bookworm
+    healthcheck:
+      test: redis-cli ping || exit 1
+    restart: always
+
+  database:
+    container_name: immich_postgres
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: immich
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+      DB_STORAGE_TYPE: 'HDD'
+    volumes:
+      - /volume1/Immich/database:/var/lib/postgresql/data
+    shm_size: 128mb
+    restart: always
+
+volumes:
+  immich-model-cache:
+    external: true
+    name: immich_model-cache
