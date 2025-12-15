@@ -1,0 +1,57 @@
+name: immich
+# Install this on my synology as a project.
+
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:v2.3.1
+    volumes:
+      - /volume1/Immich/library:/data
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      TZ: Europe/Amsterdam
+    ports:
+      - '2283:2283'
+    depends_on:
+      - redis
+      - database
+    restart: always
+    healthcheck:
+      disable: false
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: ghcr.io/immich-app/immich-machine-learning:v2.3.1
+    volumes:
+      - immich-model-cache:/cache
+    environment:
+      TZ: Europe/Amsterdam
+    restart: always
+    healthcheck:
+      disable: false
+
+  redis:
+    container_name: immich_redis
+    image: docker.io/valkey/valkey:9
+    healthcheck:
+      test: redis-cli ping || exit 1
+    restart: always
+
+  database:
+    container_name: immich_postgres
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: immich
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+      DB_STORAGE_TYPE: 'HDD'
+    volumes:
+      - /volume1/Immich/database:/var/lib/postgresql/data
+    shm_size: 128mb
+    restart: always
+
+volumes:
+  immich-model-cache:
+    external: true
+    name: immich_model-cache
