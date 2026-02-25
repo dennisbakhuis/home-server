@@ -440,16 +440,13 @@
       entity_id: '{{ cam }}'
       filename: '{{ snap }}'
   - delay: 00:00:01
-  - action: notify.everybody
+  - action: telegram_bot.send_photo
     data:
-      message: Ding dong!
-      data:
-        photo:
-        - file: '{{ snap }}'
-          caption: Ding dong!
-  - action: shell_command.delete_file
-    data:
-      path: '{{ snap }}'
+      caption: Ding dong\!
+      file: '{{ snap }}'
+      target:
+      - '731537931'
+      - '857739292'
   - if:
     - condition: state
       entity_id: media_player.lg_television
@@ -458,10 +455,13 @@
     - action: notify.lg_webos_smart_tv
       data:
         message: Ding Dong!
+  - action: shell_command.delete_file
+    data:
+      path: '{{ snap }}'
   mode: single
   variables:
     cam: camera.camera_oprit_mainstream
-    snap: /tmp/doorbell_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg
+    snap: /config/www/snapshots/doorbell_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg
 - id: '1728238400888'
   alias: Wc stank afzuiger
   description: Zet de ecofan op timer 10min als er voor meer dan 2 minuten beweging

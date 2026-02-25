@@ -1,17 +1,16 @@
 # Home assistant Configuration
 # Author: Dennis Bakhuis
-# Date  : 2024-09-16
+# Date  : 2026-01-21
 homeassistant:
   auth_mfa_modules:
     - type: notify
       include:
         - everybody
   allowlist_external_dirs:
-    - /tmp
-
+    - "/config/www"
+    - "/config/www/snapshots"
 
 default_config:
-
 
 http:
   ip_ban_enabled: true
@@ -19,38 +18,14 @@ http:
   use_x_forwarded_for: true
   trusted_proxies: !include trusted_proxies.yaml
 
-
 recorder:
   purge_keep_days: 5
-
-
-# telegram_bot:
-#   - platform: polling
-#     api_key: !secret bottoken
-#     allowed_chat_ids:
-#       - !secret chatid_dennis
-#       - !secret chatid_kim
-
-notify:
-  - platform: telegram
-    name: telegram_dennis
-    chat_id: !secret chatid_dennis
-  - platform: telegram
-    name: telegram_kim
-    chat_id: !secret chatid_kim
-  - name: everybody
-    platform: group
-    services:
-      - service: telegram_dennis
-      - service: telegram_kim
 
 script: !include scripts.yaml
 automation: !include automations.yaml
 scene: !include scenes.yaml
 mqtt: !include mqtt.yaml
 
-
-# Data collection
 influxdb:
   api_version: 2
   ssl: false
