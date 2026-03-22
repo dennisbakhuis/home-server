@@ -57,6 +57,9 @@
         - condition: numeric_state
           entity_id: sensor.rfhdckk0a4_pv_all_power
           below: 150
+        - condition: state
+          entity_id: sun.sun
+          state: below_horizon
       sequence:
       - data: {}
         target:
@@ -213,6 +216,9 @@
         - condition: numeric_state
           entity_id: sensor.rfhdckk0a4_pv_all_power
           below: 180
+        - condition: state
+          entity_id: sun.sun
+          state: below_horizon
       sequence:
       - data:
           entity_id: "{% if states('input_select.licht_keuken_hoog') == 'Geel' %}\n
@@ -398,7 +404,6 @@
 
             '
         action: light.turn_on
-- *id001
 - id: '1726513549521'
   alias: Keuken laag naar uit bij alles uit
   description: Als alles uit gaat, gaat keuken laag ook naar uit.
