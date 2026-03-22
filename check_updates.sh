@@ -11,9 +11,8 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
 MAGENTA='\033[0;35m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
 echo ""
@@ -32,23 +31,14 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
-# Extract service→image mapping and pipe into the Python checker
-docker compose config --format json 2>/dev/null | python3 -c "
-import sys, json
-config = json.load(sys.stdin)
-for svc, details in config.get('services', {}).items():
-    img = details.get('image', '')
-    if img:
-        print(f'{svc}={img}')
-" | python3 << 'PYEOF'
+python3 - << 'PYEOF'
 import json, sys, subprocess
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import urllib.request, urllib.error
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ── Registry helpers ──────────────────────────────────────────────────────────
 
 def parse_image(image):
-    """Return (registry_host, repo, tag) from an image string."""
     tag = 'latest'
     if ':' in image.split('/')[-1]:
         image, tag = image.rsplit(':', 1)
@@ -58,15 +48,12 @@ def parse_image(image):
     if '.' in parts[0] or parts[0] == 'localhost':
         host = parts[0]
         repo = '/'.join(parts[1:])
-        # lscr.io mirrors ghcr.io
         if host == 'lscr.io':
             host = 'ghcr.io'
         return host, repo, tag
-    # user/image on Docker Hub
     return 'registry-1.docker.io', image, tag
 
 def get_token(host, repo):
-    """Fetch an anonymous pull token for the given registry."""
     if host == 'registry-1.docker.io':
         url = f'https://auth.docker.io/token?service=registry.docker.io&scope=repository:{repo}:pull'
     elif host == 'ghcr.io':
@@ -89,22 +76,24 @@ def fetch(url, token=None, accept=None):
     with urllib.request.urlopen(req, timeout=15) as r:
         return json.loads(r.read())
 
+MANIFEST_ACCEPT = ','.join([
+    'application/vnd.oci.image.index.v1+json',
+    'application/vnd.docker.distribution.manifest.list.v2+json',
+    'application/vnd.oci.image.manifest.v1+json',
+    'application/vnd.docker.distribution.manifest.v2+json',
+])
+SINGLE_ACCEPT = ','.join([
+    'application/vnd.oci.image.manifest.v1+json',
+    'application/vnd.docker.distribution.manifest.v2+json',
+])
+
 def get_remote_version(image):
-    """Return (version_str, config_digest) from the registry without pulling."""
     host, repo, tag = parse_image(image)
     token = get_token(host, repo)
     base = f'https://{host}/v2/{repo}'
 
-    MANIFEST_ACCEPT = ','.join([
-        'application/vnd.oci.image.index.v1+json',
-        'application/vnd.docker.distribution.manifest.list.v2+json',
-        'application/vnd.oci.image.manifest.v1+json',
-        'application/vnd.docker.distribution.manifest.v2+json',
-    ])
-
     manifest = fetch(f'{base}/manifests/{tag}', token=token, accept=MANIFEST_ACCEPT)
 
-    # If manifest list, find linux/amd64 entry
     if 'manifests' in manifest:
         target = next(
             (m for m in manifest['manifests']
@@ -112,8 +101,7 @@ def get_remote_version(image):
              and (m.get('platform') or {}).get('os') == 'linux'),
             manifest['manifests'][0]
         )
-        manifest = fetch(f'{base}/manifests/{target["digest"]}', token=token,
-                         accept='application/vnd.oci.image.manifest.v1+json,application/vnd.docker.distribution.manifest.v2+json')
+        manifest = fetch(f'{base}/manifests/{target["digest"]}', token=token, accept=SINGLE_ACCEPT)
 
     config_digest = manifest.get('config', {}).get('digest', '')
     if not config_digest:
@@ -123,15 +111,16 @@ def get_remote_version(image):
     labels = (config.get('config') or config.get('Config') or {}).get('Labels') or {}
     version = (
         labels.get('org.opencontainers.image.version')
-        or labels.get('build_version')          # linuxserver images
-        or (config.get('created') or '')[:10]   # fallback: build date
+        or labels.get('build_version')
+        or (config.get('created') or '')[:10]
     )
     return version or None, config_digest
 
 def get_local_info(image):
-    """Return (version_str, config_digest) from the local Docker image store."""
-    r = subprocess.run(['docker', 'inspect', image, '--format', '{{json .}}'],
-                       capture_output=True, text=True)
+    r = subprocess.run(
+        ['docker', 'inspect', image, '--format', '{{json .}}'],
+        capture_output=True, text=True
+    )
     if r.returncode != 0:
         return None, None
     try:
@@ -150,8 +139,6 @@ def get_local_info(image):
     except Exception:
         return None, None
 
-# ── Per-service check ─────────────────────────────────────────────────────────
-
 def check_service(service, image):
     local_ver, local_digest = get_local_info(image)
     try:
@@ -162,9 +149,10 @@ def check_service(service, image):
 
     if local_digest and remote_digest:
         up_to_date = local_digest == remote_digest
+    elif local_ver and remote_ver:
+        up_to_date = local_ver == remote_ver
     else:
-        # Fall back to version string compare if digests unavailable
-        up_to_date = (local_ver == remote_ver) if (local_ver and remote_ver) else None
+        up_to_date = None
 
     return dict(
         status='ok' if up_to_date else ('update' if up_to_date is False else 'unknown'),
@@ -174,12 +162,29 @@ def check_service(service, image):
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
-services = {}
-for line in sys.stdin:
-    line = line.strip()
-    if '=' in line:
-        svc, img = line.split('=', 1)
-        services[svc] = img
+# Parse service→image from docker compose config (no piping needed)
+result = subprocess.run(
+    ['docker', 'compose', 'config', '--format', 'json'],
+    capture_output=True, text=True
+)
+try:
+    config = json.loads(result.stdout)
+except Exception:
+    print('\033[0;31m❌ Could not parse docker compose config\033[0m')
+    sys.exit(1)
+
+services = {
+    svc: details['image']
+    for svc, details in config.get('services', {}).items()
+    if details.get('image')
+}
+
+if not services:
+    print('\033[0;31m❌ No services with images found\033[0m')
+    sys.exit(1)
+
+print(f'  \033[1;33m📋 Checking {len(services)} services in parallel...\033[0m')
+print(f'  \033[0;34m{"─" * 48}\033[0m')
 
 results = []
 with ThreadPoolExecutor(max_workers=10) as ex:
@@ -188,21 +193,15 @@ with ThreadPoolExecutor(max_workers=10) as ex:
     total = len(futures)
     for fut in as_completed(futures):
         done += 1
-        print(f'\r  \033[1;33m⏳ Checked {done}/{total}...\033[0m', end='', flush=True, file=sys.stderr)
+        print(f'\r  \033[1;33m⏳ Checked {done}/{total}...\033[0m', end='', flush=True)
         results.append(fut.result())
 
-print(f'\r  \033[0;32m✅ All checks complete.          \033[0m', file=sys.stderr)
+print(f'\r  \033[0;32m✅ All checks complete.          \033[0m')
 
 results.sort(key=lambda x: x['service'])
-
-updates, ok, errors = [], [], []
-for r in results:
-    if r['status'] == 'update':
-        updates.append(r)
-    elif r['status'] == 'ok':
-        ok.append(r)
-    else:
-        errors.append(r)
+updates = [r for r in results if r['status'] == 'update']
+ok      = [r for r in results if r['status'] == 'ok']
+errors  = [r for r in results if r['status'] not in ('update', 'ok')]
 
 print()
 print('\033[0;35m================================================\033[0m')
