@@ -149,7 +149,7 @@ services:
   ## growatt monitoring: grott ##
   ###############################
   grott:
-    image: ledidobe/grott:latest
+    image: ledidobe/grott:master
     container_name: grott
     network_mode: host
     restart: unless-stopped
@@ -164,6 +164,7 @@ services:
       - gpvapikey=$PVORG_API_KEY
       - gpvsystemid=$PVORG_SYSTEM_ID
       - gblockcmd=True
+      - gmqttretain=True
 
   ##############
   ## heimdall ##
