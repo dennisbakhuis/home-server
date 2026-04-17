@@ -63,3 +63,5 @@ homeassistant/config/.cache/
 
 # hermes
 /hermes/
+
+/.claude/
