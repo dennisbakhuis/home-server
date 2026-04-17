@@ -230,14 +230,15 @@ services:
       - t2_proxy
     environment:
       - TZ=$TZ
-      - database_user=$TESLA_DATABASE_USERNAME
-      - database_pass=$TESLA_DATABASE_PASSWORD
-      - database_name=$TESLA_DATABASE_NAME
-      - database_host=$TESLA_DATABASE_HOST
-      - database_port=$TESLA_DATABASE_PORT
+      - DATABASE_USER=$TESLA_DATABASE_USERNAME
+      - DATABASE_PASS=$TESLA_DATABASE_PASSWORD
+      - DATABASE_NAME=$TESLA_DATABASE_NAME
+      - DATABASE_HOST=$TESLA_DATABASE_HOST
+      - DATABASE_PORT=$TESLA_DATABASE_PORT
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - teslamate-grafana-data:/var/lib/grafana
+      - $DOCKERDIR/tesla_grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
     ports:
       - 3000:3000
     restart: unless-stopped
@@ -295,6 +296,8 @@ services:
       - API_SERVER_HOST=0.0.0.0
       - API_SERVER_PORT=8642
       - API_SERVER_KEY=$HERMES_API_KEY
+      - HERMES_UID=$PUID
+      - HERMES_GID=$PGID
     networks:
       - hermes-net
     deploy:
@@ -307,11 +310,14 @@ services:
     image: nousresearch/hermes-agent:latest
     container_name: hermes-dashboard
     restart: unless-stopped
+    entrypoint: ["/bin/bash", "-c", "chown -R $${HERMES_UID}:$${HERMES_GID} /opt/hermes 2>/dev/null || true; exec /opt/hermes/docker/entrypoint.sh \"$$@\"", "--"]
     command: dashboard --host 0.0.0.0 --insecure
     volumes:
       - $DOCKERDIR/hermes:/opt/data
     environment:
       - GATEWAY_HEALTH_URL=http://hermes:8642
+      - HERMES_UID=$PUID
+      - HERMES_GID=$PGID
     networks:
       - t2_proxy
       - hermes-net
