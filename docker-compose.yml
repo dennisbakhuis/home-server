@@ -305,6 +305,7 @@ services:
     container_name: hermes-dashboard
     restart: unless-stopped
     command: dashboard --host 0.0.0.0 --insecure
+    user: "${PUID}:${PGID}"
     volumes:
       - ~/.hermes:/opt/data
     environment:
@@ -326,4 +327,3 @@ services:
       - "traefik.http.routers.hermes-dashboard-rtr.service=hermes-dashboard-svc"
       - "traefik.http.routers.hermes-dashboard-rtr.middlewares=chain-white-list@file"
       - "traefik.http.services.hermes-dashboard-svc.loadbalancer.server.port=9119"
-
