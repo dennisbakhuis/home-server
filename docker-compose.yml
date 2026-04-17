@@ -288,6 +288,8 @@ services:
     restart: unless-stopped
     command: gateway run
     user: "${PUID}:${PGID}"
+    environment:
+      - HOME=/opt/data/home
     ports:
       - "8642:8642"
     volumes:
@@ -309,6 +311,7 @@ services:
     volumes:
       - $DOCKERDIR/hermes:/opt/data
     environment:
+      - HOME=/opt/data/home
       - GATEWAY_HEALTH_URL=http://hermes:8642
     networks:
       - t2_proxy
