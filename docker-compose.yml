@@ -81,6 +81,7 @@ services:
       - CF_API_EMAIL=$CLOUDFLARE_EMAIL
       - CF_API_KEY=$CLOUDFLARE_API_KEY
       - TZ=$TZ
+      - DOCKER_API_VERSION=1.44
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik-rtr.entrypoints=https"
