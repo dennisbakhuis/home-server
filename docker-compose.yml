@@ -305,13 +305,12 @@ services:
     container_name: hermes-dashboard
     restart: unless-stopped
     command: dashboard --host 0.0.0.0
-    ports:
-      - "9119:9119"
     volumes:
       - ~/.hermes:/opt/data
     environment:
       - GATEWAY_HEALTH_URL=http://hermes:8642
     networks:
+      - t2_proxy
       - hermes-net
     depends_on:
       - hermes
@@ -320,4 +319,11 @@ services:
         limits:
           memory: 512M
           cpus: "0.5"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hermes-dashboard-rtr.entrypoints=https"
+      - "traefik.http.routers.hermes-dashboard-rtr.rule=Host(`hermes.$DOMAINNAME`)"
+      - "traefik.http.routers.hermes-dashboard-rtr.service=hermes-dashboard-svc"
+      - "traefik.http.routers.hermes-dashboard-rtr.middlewares=chain-white-list@file"
+      - "traefik.http.services.hermes-dashboard-svc.loadbalancer.server.port=9119"
 
