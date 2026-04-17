@@ -291,7 +291,7 @@ services:
     ports:
       - "8642:8642"
     volumes:
-      - ~/.hermes:/opt/data
+      - $DOCKERDIR/hermes:/opt/data
     networks:
       - hermes-net
     deploy:
@@ -307,7 +307,7 @@ services:
     command: dashboard --host 0.0.0.0 --insecure
     user: "${PUID}:${PGID}"
     volumes:
-      - ~/.hermes:/opt/data
+      - $DOCKERDIR/hermes:/opt/data
     environment:
       - GATEWAY_HEALTH_URL=http://hermes:8642
     networks:
