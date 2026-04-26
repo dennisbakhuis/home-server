@@ -52,16 +52,16 @@ services:
       - --providers.docker.network=t2_proxy
       - --providers.file.directory=/rules
       - --providers.file.watch=true
-      # Add dns-cloudflare as default certresolver for all services. Also enables TLS and no need to specify on individual services
-      - --entrypoints.https.http.tls.certresolver=dns-cloudflare
+      # Add letsencrypt as default certresolver for all services. Also enables TLS and no need to specify on individual services
+      - --entrypoints.https.http.tls.certresolver=letsencrypt
       - --entrypoints.https.http.tls.domains[0].main=$DOMAINNAME
       - --entrypoints.https.http.tls.domains[0].sans=*.$DOMAINNAME
-      # - --certificatesResolvers.dns-cloudflare.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory # LetsEncrypt Staging Server - uncomment when testing
-      - --certificatesResolvers.dns-cloudflare.acme.email=$CLOUDFLARE_EMAIL
-      - --certificatesResolvers.dns-cloudflare.acme.storage=/acme.json
-      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.provider=cloudflare
-      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.resolvers=1.1.1.1:53,1.0.0.1:53
-      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.propagation.delayBeforeChecks=90 # To delay DNS check and reduce LE hitrate
+      # - --certificatesResolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory # LetsEncrypt Staging Server - uncomment when testing
+      - --certificatesResolvers.letsencrypt.acme.email=$LETSENCRYPT_EMAIL
+      - --certificatesResolvers.letsencrypt.acme.storage=/acme.json
+      - --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=hetzner
+      - --certificatesResolvers.letsencrypt.acme.dnsChallenge.resolvers=9.9.9.9:53,149.112.112.112:53
+      - --certificatesResolvers.letsencrypt.acme.dnsChallenge.propagation.delayBeforeChecks=90 # To delay DNS check and reduce LE hitrate
     networks:
       t2_proxy:
         ipv4_address: $TRAEFIKIP
@@ -78,15 +78,14 @@ services:
       - $DOCKERDIR/traefik/logs:/traefik_log
       - $DOCKERDIR/shared:/shared
     environment:
-      - CF_API_EMAIL=$CLOUDFLARE_EMAIL
-      - CF_API_KEY=$CLOUDFLARE_API_KEY
+      - HETZNER_API_TOKEN=$HETZNER_API_TOKEN
       - TZ=$TZ
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik-rtr.entrypoints=https"
       - "traefik.http.routers.traefik-rtr.rule=Host(`traefik.$DOMAINNAME`)"
       - "traefik.http.routers.traefik-rtr.tls=true"
-      # - "traefik.http.routers.traefik-rtr.tls.certresolver=dns-cloudflare" # Comment out this line after first run of traefik to force the use of wildcard certs
+      # - "traefik.http.routers.traefik-rtr.tls.certresolver=letsencrypt" # Comment out this line after first run of traefik to force the use of wildcard certs
       - "traefik.http.routers.traefik-rtr.tls.domains[0].main=$DOMAINNAME"
       - "traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.$DOMAINNAME"
       - "traefik.http.routers.traefik-rtr.service=api@internal"

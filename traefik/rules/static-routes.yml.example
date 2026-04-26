@@ -8,7 +8,7 @@ http:
         - chain-no-auth
       service: home-assistant-svc
       tls:
-        certResolver: dns-cloudflare
+        certResolver: letsencrypt
   services:
     home-assistant-svc:
       loadBalancer:
