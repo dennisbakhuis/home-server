@@ -93,16 +93,17 @@ services:
   #######################
   ## mosquitto-eclipse ##
   #######################
-  mosquitto:
-    image: eclipse-mosquitto:latest
-    container_name: mosquitto
-    network_mode: host
-    restart: unless-stopped
-    volumes:
-      # not using persistence
-      - $DOCKERDIR/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
-      - $DOCKERDIR/secrets/mosquitto.passwd:/mosquitto/config/mosquitto.passwd
-      - /etc/localtime:/etc/localtime:ro
+  # mosquitto:
+  #   image: eclipse-mosquitto:latest
+  #   container_name: mosquitto
+  #   network_mode: host
+  #   restart: unless-stopped
+  #   volumes:
+  #     # not using persistence
+  #     - $DOCKERDIR/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+  #     - $DOCKERDIR/secrets/mosquitto.passwd:/mosquitto/config/mosquitto.passwd
+  #     - /etc/localtime:/etc/localtime:ro
+  #
 
   ####################
   ## home-assistant ##
@@ -158,7 +159,7 @@ services:
     environment:
       - TZ=$TZ
       - ginvtype=tl3
-      - gmqttip=$SERVERIP
+      - gmqttip=$MQTT_IP
       - gmqttauth=True
       - gmqttuser=$MQTT_USER
       - gmqttpassword=$MQTT_PASSWORD
@@ -171,26 +172,26 @@ services:
   ##############
   ## heimdall ##
   ##############
-  heimdall:
-    image: lscr.io/linuxserver/heimdall
-    container_name: heimdall
-    networks:
-      - t2_proxy
-    environment:
-      - PUID=$PUID
-      - PGID=$PGID
-      - TZ=$TZ
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - $DOCKERDIR/heimdall:/config
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.heimdall-rtr.entrypoints=https"
-      - "traefik.http.routers.heimdall-rtr.rule=Host(`heimdall.$DOMAINNAME`)"
-      - "traefik.http.routers.heimdall-rtr.service=heimdall-svc"
-      - "traefik.http.routers.heimdall-rtr.middlewares=chain-white-list@file"
-      - "traefik.http.services.heimdall-svc.loadbalancer.server.port=80"
+  # heimdall:
+  #   image: lscr.io/linuxserver/heimdall
+  #   container_name: heimdall
+  #   networks:
+  #     - t2_proxy
+  #   environment:
+  #     - PUID=$PUID
+  #     - PGID=$PGID
+  #     - TZ=$TZ
+  #   volumes:
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - $DOCKERDIR/heimdall:/config
+  #   restart: unless-stopped
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.heimdall-rtr.entrypoints=https"
+  #     - "traefik.http.routers.heimdall-rtr.rule=Host(`heimdall.$DOMAINNAME`)"
+  #     - "traefik.http.routers.heimdall-rtr.service=heimdall-svc"
+  #     - "traefik.http.routers.heimdall-rtr.middlewares=chain-white-list@file"
+  #     - "traefik.http.services.heimdall-svc.loadbalancer.server.port=80"
 
   ############################
   # Voorvoet_importeer_tool ##
@@ -261,7 +262,7 @@ services:
       - DATABASE_NAME=$TESLA_DATABASE_NAME
       - DATABASE_HOST=$TESLA_DATABASE_HOST
       - DATABASE_PORT=$TESLA_DATABASE_PORT
-      - MQTT_HOST=$SERVERIP
+      - MQTT_HOST=$MQTT_SERVER
       - MQTT_USERNAME=$MQTT_USER
       - MQTT_PASSWORD=$MQTT_PASSWORD
     volumes:
